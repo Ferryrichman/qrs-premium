@@ -593,7 +593,7 @@ def render_whatsapp_section(info: dict, stats: dict):
     yr10 = f"10年年化：{c10*100:.1f}%" if c10 is not None else "10年年化：數據不足"
 
     msg = (
-        f"📊【FRM Premium Signal】{month_str}\n"
+        f"📊【FRM ETF Premium Signal】{month_str}\n"
         f"\n"
         f"🥇 #1 主倉 (60%): {h1}{lev1}  {ETF_INFO[h1]['name']}\n"
         f"🥈 #2 副倉 (40%): {h2}{lev2}  {ETF_INFO[h2]['name']}\n"
@@ -608,9 +608,8 @@ def render_whatsapp_section(info: dict, stats: dict):
         f"Sharpe：{stats['sharpe']:.2f}  |  Sortino：{stats['sortino']:.2f}\n"
         f"{yr3}\n{yr5}\n{yr10}\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"@FRM Premium · FerryRichMan Limited\n"
-        f"⚠️ 接受 -30% MDD + 單月可達 -20%\n"
-        f"（不構成任何投資建議）"
+        f"@FRM ETF Premium · FerryRichMan Limited\n"
+        f"（只供教學及記錄用途，不構成任何投資建議）"
     )
 
     html_enc = msg.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")

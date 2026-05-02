@@ -514,6 +514,13 @@ body {{ background:transparent; padding:0; margin:0; }}
     )
 
 
+def _hex_to_rgba(hex_color: str, alpha: float = 1.0) -> str:
+    """Convert #RRGGBB to rgba(r,g,b,a) — Plotly Bar marker_color rejects 8-digit hex."""
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r}, {g}, {b}, {alpha})"
+
+
 def render_scores_chart(scores: dict, info: dict):
     """Bar chart showing all base ETF scores with #1 and #2 highlighted."""
     tickers = list(scores.keys())
@@ -522,7 +529,7 @@ def render_scores_chart(scores: dict, info: dict):
     colors = []
     for t in tickers:
         if t == raw1: colors.append(ETF_INFO[t]["color"])
-        elif t == raw2: colors.append(ETF_INFO[t]["color"] + "80")  # semi-transparent
+        elif t == raw2: colors.append(_hex_to_rgba(ETF_INFO[t]["color"], 0.5))  # semi-transparent
         else: colors.append("#334155")
 
     # Sort by score descending

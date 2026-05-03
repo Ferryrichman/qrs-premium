@@ -1,0 +1,339 @@
+{
+  "label": "QRS Premium (Strategy C)",
+  "generated_at": "2026-05-03T23:44:12.381634",
+  "metrics": {
+    "cagr": 0.14952793088662109,
+    "mdd": -0.27891353645700595,
+    "sharpe": 0.7973918338924071,
+    "sortino": 1.0319325136088584,
+    "profit_factor": 1.869074545459932,
+    "calmar": 0.5361085474231566,
+    "n_years": 18.333333333333332,
+    "n_months": 220,
+    "win_rate": 0.6227272727272727,
+    "best_month": 0.17909078212776994,
+    "worst_month": -0.17168883744308477,
+    "annualized_vol": 0.20139277029883437,
+    "skew": -0.48848338897236765,
+    "kurtosis": 1.2967880235965428
+  },
+  "out_of_sample": {
+    "split_year": 2017,
+    "train_period": "2008-2017",
+    "test_period": "2018-2026",
+    "in_sample": {
+      "cagr": 0.13213687680533615,
+      "mdd": -0.27891353645700595,
+      "sharpe": 0.7597216221134806,
+      "sortino": 1.0171688102271328,
+      "profit_factor": 1.8044065469217292,
+      "calmar": 0.47375569677918744,
+      "n_years": 10.0,
+      "n_months": 120,
+      "win_rate": 0.575,
+      "best_month": 0.1481478835398785,
+      "worst_month": -0.17168883744308477,
+      "annualized_vol": 0.18746130599769004,
+      "skew": -0.5517639407631162,
+      "kurtosis": 1.6359603103983869
+    },
+    "out_of_sample": {
+      "cagr": 0.17075019193906082,
+      "mdd": -0.24388323293205486,
+      "sharpe": 0.8376990305297957,
+      "sortino": 1.0437957295286013,
+      "profit_factor": 1.939872469425586,
+      "calmar": 0.7001309187443456,
+      "n_years": 8.333333333333334,
+      "n_months": 100,
+      "win_rate": 0.68,
+      "best_month": 0.17909078212776994,
+      "worst_month": -0.16632959394124258,
+      "annualized_vol": 0.2177316617928117,
+      "skew": -0.4562763917987969,
+      "kurtosis": 0.9322501355196136
+    },
+    "degradation": {
+      "cagr": 0.03861331513372468,
+      "sharpe": 0.07797740841631506,
+      "sortino": 0.026626919301468543
+    }
+  },
+  "walk_forward": {
+    "yearly": [
+      {
+        "year": 2009,
+        "train_sharpe": -0.13368068566518912,
+        "oos_sharpe": 1.4330820298100972,
+        "oos_return": 0.33496257050296263,
+        "oos_mdd": -0.030963421257200564
+      },
+      {
+        "year": 2010,
+        "train_sharpe": 0.6046059225334843,
+        "oos_sharpe": 0.4423263303146517,
+        "oos_return": 0.09188501676050165,
+        "oos_mdd": -0.21091749843146196
+      },
+      {
+        "year": 2011,
+        "train_sharpe": 0.5482980464873187,
+        "oos_sharpe": 1.452838279756057,
+        "oos_return": 0.22492828159392042,
+        "oos_mdd": -0.04401719522532412
+      },
+      {
+        "year": 2012,
+        "train_sharpe": 0.6883975125224492,
+        "oos_sharpe": -0.1963840986421106,
+        "oos_return": -0.06605451745161306,
+        "oos_mdd": -0.20424842752566336
+      },
+      {
+        "year": 2013,
+        "train_sharpe": 0.5146681500434431,
+        "oos_sharpe": 2.6744015989400607,
+        "oos_return": 0.42829899248239367,
+        "oos_mdd": -0.037522315444650935
+      },
+      {
+        "year": 2014,
+        "train_sharpe": 0.9440041786688648,
+        "oos_sharpe": 1.6631615080653575,
+        "oos_return": 0.28547632189001027,
+        "oos_mdd": -0.03033218995984915
+      },
+      {
+        "year": 2015,
+        "train_sharpe": 0.9462822137898105,
+        "oos_sharpe": -1.0757596240355327,
+        "oos_return": -0.1299367677739942,
+        "oos_mdd": -0.1645277881852036
+      },
+      {
+        "year": 2016,
+        "train_sharpe": 0.81277099181074,
+        "oos_sharpe": -0.5490556561898915,
+        "oos_return": -0.07187412824707151,
+        "oos_mdd": -0.03362731741569843
+      },
+      {
+        "year": 2017,
+        "train_sharpe": 0.4820421251054648,
+        "oos_sharpe": 3.978382777544328,
+        "oos_return": 0.4871578202432256,
+        "oos_mdd": -0.02636121066249376
+      },
+      {
+        "year": 2018,
+        "train_sharpe": 1.1911593319917262,
+        "oos_sharpe": -0.08746637246396455,
+        "oos_return": -0.05576366089430307,
+        "oos_mdd": -0.19798903046752958
+      },
+      {
+        "year": 2019,
+        "train_sharpe": 0.5272304153024817,
+        "oos_sharpe": 0.4537507913037717,
+        "oos_return": 0.0832830156176465,
+        "oos_mdd": -0.1601727439515489
+      },
+      {
+        "year": 2020,
+        "train_sharpe": 0.31644294359372804,
+        "oos_sharpe": 1.1645690968748783,
+        "oos_return": 0.4014294699035361,
+        "oos_mdd": -0.15441402675662041
+      },
+      {
+        "year": 2021,
+        "train_sharpe": 0.709402834402632,
+        "oos_sharpe": 1.7638825057378302,
+        "oos_return": 0.37416990011653284,
+        "oos_mdd": -0.10527562164465738
+      },
+      {
+        "year": 2022,
+        "train_sharpe": 1.031509305128721,
+        "oos_sharpe": -1.0148285667622055,
+        "oos_return": -0.14761450515012464,
+        "oos_mdd": -0.08244976484824444
+      },
+      {
+        "year": 2023,
+        "train_sharpe": 0.5478842033676903,
+        "oos_sharpe": 1.022839879014585,
+        "oos_return": 0.1975806600452017,
+        "oos_mdd": -0.13936614920101595
+      },
+      {
+        "year": 2024,
+        "train_sharpe": 0.7760256463656874,
+        "oos_sharpe": 1.538160829239584,
+        "oos_return": 0.27952791651767206,
+        "oos_mdd": -0.09843069846451574
+      },
+      {
+        "year": 2025,
+        "train_sharpe": 0.957787430679355,
+        "oos_sharpe": 2.4094586055714964,
+        "oos_return": 0.35525112383300983,
+        "oos_mdd": -0.006300352856844164
+      }
+    ],
+    "n_windows": 17,
+    "train_sharpe_mean": 0.6744017980075534,
+    "oos_sharpe_mean": 1.0043152890634703,
+    "train_oos_sharpe_correlation": -0.3857653094627717
+  },
+  "cross_validation": {
+    "folds": [
+      {
+        "fold": 1,
+        "test_period": "2008-01 to 2011-08",
+        "train_sharpe": 0.8164944412282857,
+        "test_sharpe": 0.7460461393981217,
+        "test_cagr": 0.1587239170799819,
+        "test_mdd": -0.27891353645700595
+      },
+      {
+        "fold": 2,
+        "test_period": "2011-09 to 2015-04",
+        "train_sharpe": 0.7510099576315072,
+        "test_sharpe": 0.8579462677877958,
+        "test_cagr": 0.13917564020830264,
+        "test_mdd": -0.2042484275256633
+      },
+      {
+        "fold": 3,
+        "test_period": "2015-05 to 2018-12",
+        "train_sharpe": 0.9033479380541255,
+        "test_sharpe": 0.3445661579278525,
+        "test_cagr": 0.046237469419845745,
+        "test_mdd": -0.2085498981540653
+      },
+      {
+        "fold": 4,
+        "test_period": "2019-01 to 2022-08",
+        "train_sharpe": 0.8644306736050263,
+        "test_sharpe": 0.7185503713561087,
+        "test_cagr": 0.15901973564203908,
+        "test_mdd": -0.17653318377592855
+      },
+      {
+        "fold": 5,
+        "test_period": "2022-09 to 2026-04",
+        "train_sharpe": 0.6770282270602274,
+        "test_sharpe": 1.4571874776979774,
+        "test_cagr": 0.2540240884380738,
+        "test_mdd": -0.1393661492010161
+      }
+    ],
+    "n_folds_actual": 5,
+    "embargo_months": 1,
+    "mean_test_sharpe": 0.8248592828335714,
+    "std_test_sharpe": 0.3603132738779518,
+    "min_test_sharpe": 0.3445661579278525,
+    "max_test_sharpe": 1.4571874776979774
+  },
+  "monte_carlo": {
+    "n_paths": 5000,
+    "block_size_months": 6,
+    "actual_cagr": 0.14952793088662109,
+    "actual_mdd": -0.27891353645700595,
+    "actual_sharpe": 0.7973918338924071,
+    "cagr_p5": 0.06697769904542832,
+    "cagr_p25": 0.11595859842112843,
+    "cagr_p50": 0.15109642901528364,
+    "cagr_p75": 0.18619442362222555,
+    "cagr_p95": 0.2356135166796186,
+    "mdd_p5": -0.5114226865303464,
+    "mdd_p25": -0.3969367533521492,
+    "mdd_p50": -0.33224124020524465,
+    "mdd_p95": -0.22072566544441125,
+    "sharpe_p5": 0.41945441350097606,
+    "sharpe_p50": 0.8073948536295332,
+    "sharpe_p95": 1.189643610796464,
+    "prob_cagr_below_zero": 0.001,
+    "prob_mdd_below_50pct": 0.059,
+    "prob_sharpe_below_0_5": 0.0976
+  },
+  "hypothesis_test": {
+    "n_observations": 220,
+    "mean_monthly_return": 0.013382412536771655,
+    "t_statistic": 3.414227854225427,
+    "p_value": 0.00076202814471301,
+    "significant_at_5pct": true,
+    "significant_at_1pct": true,
+    "interpretation": "Strategy returns are statistically significantly different from zero"
+  },
+  "deflated_sharpe": {
+    "raw_sharpe_annualized": 0.7973918338924072,
+    "raw_sharpe_monthly": 0.23018719497369533,
+    "n_observations": 220,
+    "n_trials_assumed": 350,
+    "skewness": -0.48848338897236765,
+    "kurtosis_pearson": 4.296788023596543,
+    "expected_max_sharpe_monthly_under_null": 0.19846006320183587,
+    "expected_max_sharpe_annualized_under_null": 0.6874858254778204,
+    "deflated_sharpe": 0.6688243822367959,
+    "is_significant_95pct": false,
+    "is_significant_99pct": false,
+    "interpretation": "DSR=0.669 → Sharpe may be inflated by multiple-testing bias (threshold for 95% confidence is 0.95)."
+  },
+  "stress_periods": {
+    "2008 GFC (Lehman)": {
+      "period": "2008-01-01 to 2009-06-30",
+      "n_months": 18,
+      "total_return": -0.06481763708170163,
+      "intra_period_mdd": -0.27891353645700595,
+      "worst_month": -0.15737097161223876
+    },
+    "2011 Eurozone Crisis": {
+      "period": "2011-07-01 to 2011-12-31",
+      "n_months": 6,
+      "total_return": 0.14755531353534912,
+      "intra_period_mdd": -0.021239017214275756,
+      "worst_month": -0.01740219414076969
+    },
+    "2015-16 China Shock": {
+      "period": "2015-08-01 to 2016-02-29",
+      "n_months": 7,
+      "total_return": -0.19252697692787013,
+      "intra_period_mdd": -0.1434905605892381,
+      "worst_month": -0.09885245830349212
+    },
+    "2018 Q4 Selloff": {
+      "period": "2018-09-01 to 2018-12-31",
+      "n_months": 4,
+      "total_return": -0.1870543100885349,
+      "intra_period_mdd": -0.19798903046752953,
+      "worst_month": -0.16632959394124258
+    },
+    "2020 COVID Crash": {
+      "period": "2020-02-01 to 2020-04-30",
+      "n_months": 3,
+      "total_return": -0.10185612090688567,
+      "intra_period_mdd": 0.0,
+      "worst_month": -0.1282968398559101
+    },
+    "2022 Stocks+Bonds Crash": {
+      "period": "2022-01-01 to 2022-12-31",
+      "n_months": 12,
+      "total_return": -0.14761450515012464,
+      "intra_period_mdd": -0.08244976484824444,
+      "worst_month": -0.13417628972205636
+    }
+  },
+  "scorecard": {
+    "sharpe_above_0_75": true,
+    "calmar_above_0_4": true,
+    "profit_factor_above_1_5": true,
+    "win_rate_above_55pct": true,
+    "p_value_below_0_05": true,
+    "dsr_above_0_95": false,
+    "oos_sharpe_close_to_in_sample": true,
+    "wf_correlation_positive": false
+  },
+  "scorecard_summary": "6/8 validation criteria passed"
+}

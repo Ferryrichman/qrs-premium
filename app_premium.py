@@ -30,6 +30,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 from datetime import datetime, timezone, timedelta
+from academic_validation_ui import render_academic_validation
 from dateutil.relativedelta import relativedelta
 import plotly.graph_objects as go
 import time
@@ -1287,8 +1288,12 @@ def main():
         render_dual_heatmap(prices)
 
     # Validation section — proves strategy is rigorously tested
-    section_header("✅", "策略驗證 · Validation")
+    section_header("✅", "策略驗證 · Validation Summary")
     render_validation_section()
+
+    # Academic-grade validation — 8 statistical tests
+    section_header("🎓", "學術級驗證 · Academic-Grade Validation")
+    render_academic_validation("validation_premium.json")
 
     # Risk warnings
     section_header("⚠️", "風險警告 · Risk Warnings")

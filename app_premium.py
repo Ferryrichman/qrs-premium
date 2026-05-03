@@ -1287,11 +1287,7 @@ def main():
     with tab3:
         render_dual_heatmap(prices)
 
-    # Validation section — proves strategy is rigorously tested
-    section_header("✅", "策略驗證 · Validation Summary")
-    render_validation_section()
-
-    # Academic-grade validation — 8 statistical tests
+    # Academic-grade validation — 8 statistical tests with Chinese commentary
     section_header("🎓", "學術級驗證 · Academic-Grade Validation")
     render_academic_validation("validation_premium.json")
 

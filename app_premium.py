@@ -1,5 +1,5 @@
 """
-QRS Premium Signal System — Strategy C
+FRM Premium ETF System — Strategy C
 FerryRichMan Limited
 ──────────────────────────────────────────────────────────────────────────────
 Streamlit App — Top-2 Weighted Momentum ETF Signal with Conditional Leverage
@@ -410,7 +410,7 @@ def render_header():
         FerryRichMan Limited &nbsp;·&nbsp; PREMIUM
     </div>
     <div style="font-size: 42px; font-weight: 900; color: #f1f5f9; letter-spacing: -2px; line-height: 1.12; margin-bottom: 10px;">
-        QRS Premium<br><span style="color:#f59e0b;">Top-2 Conditional Leverage</span>
+        FRM Premium<br><span style="color:#f59e0b;">ETF SYSTEM</span>
     </div>
     <div style="font-size: 15px; color: #475569; letter-spacing: 0.5px;">
         月度 Top-2 動力 + 杠杆條件啟動 &nbsp;·&nbsp; Strategy C — Validated
@@ -751,10 +751,10 @@ def render_cumulative_chart(stats: dict):
             mode="lines", line=dict(color="#475569", width=1.5, dash="dot"),
             hovertemplate="%{x|%Y-%m}  SPY: <b>$%{y:,.0f}</b><extra></extra>"))
     fig.add_trace(go.Scatter(
-        x=cum.index, y=cum.values, name="QRS Premium",
+        x=cum.index, y=cum.values, name="FRM Premium",
         mode="lines", line=dict(color="#f59e0b", width=2.5),
         fill="tozeroy", fillcolor="rgba(245,158,11,0.07)",
-        hovertemplate="%{x|%Y-%m}  Premium: <b>$%{y:,.0f}</b><extra></extra>"))
+        hovertemplate="%{x|%Y-%m}  FRM Premium: <b>$%{y:,.0f}</b><extra></extra>"))
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         height=290, margin=dict(l=0, r=0, t=10, b=0),
@@ -950,9 +950,9 @@ def render_validation_section():
     </tr></thead>
     <tbody>
       <tr><td style="padding:6px;">SPY Buy & Hold</td><td style="padding:6px;text-align:right;">11.1%</td><td style="padding:6px;text-align:right;color:#f87171;">-47.2%</td><td style="padding:6px;text-align:right;">0.73</td></tr>
-      <tr style="background:#0a0f1e;"><td style="padding:6px;">QRS Basic (SPY/VEU/BIL)</td><td style="padding:6px;text-align:right;">9.7%</td><td style="padding:6px;text-align:right;">-15.9%</td><td style="padding:6px;text-align:right;">0.86</td></tr>
+      <tr style="background:#0a0f1e;"><td style="padding:6px;">FRM Standard (SPY/VEU/BIL)</td><td style="padding:6px;text-align:right;">9.7%</td><td style="padding:6px;text-align:right;">-15.9%</td><td style="padding:6px;text-align:right;">0.86</td></tr>
       <tr><td style="padding:6px;">QRSA-25% (4 modules)</td><td style="padding:6px;text-align:right;">10.5%</td><td style="padding:6px;text-align:right;">-31.0%</td><td style="padding:6px;text-align:right;">0.63</td></tr>
-      <tr style="background:#1e1b1a;"><td style="padding:6px;color:#fbbf24;"><b>Strategy C ⭐</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>15.0%</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>-27.9%</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>0.80</b></td></tr>
+      <tr style="background:#1e1b1a;"><td style="padding:6px;color:#fbbf24;"><b>FRM Premium (Strategy C) ⭐</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>15.0%</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>-27.9%</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>0.80</b></td></tr>
       <tr><td style="padding:6px;">Combo B (+ SOXX)</td><td style="padding:6px;text-align:right;">18.4%</td><td style="padding:6px;text-align:right;">-30.8%</td><td style="padding:6px;text-align:right;">0.91</td></tr>
     </tbody>
   </table>
@@ -1087,7 +1087,7 @@ def render_footer():
     </div>
     <div style="font-size:10px;color:#1e293b;">
         &copy; {year} FerryRichMan Limited &middot; All Rights Reserved<br>
-        QRS Premium Signal System (Strategy C) &middot; Powered by Python &amp; Streamlit
+        FRM Premium ETF System (Strategy C) &middot; Powered by Python &amp; Streamlit
     </div>
 </div>
         """,
@@ -1142,8 +1142,8 @@ def render_login_page():
     </div>
     <div style="font-size: 38px; font-weight: 900; color: #f1f5f9;
         letter-spacing: -2px; line-height: 1.12; margin-bottom: 8px;">
-        QRS Premium<br>
-        <span style="color:#f59e0b;">Signal System</span>
+        FRM Premium<br>
+        <span style="color:#f59e0b;">ETF SYSTEM</span>
     </div>
     <div style="font-size: 14px; color: #475569; margin-bottom: 32px;">
         🔒 訂閱用戶專屬 · Subscriber Access Only
@@ -1251,7 +1251,7 @@ def check_password() -> bool:
 # ══════════════════════════════════════════════════════════
 def main():
     st.set_page_config(
-        page_title="QRS Premium · FerryRichMan Limited",
+        page_title="FRM Premium ETF System · FerryRichMan Limited",
         page_icon="⚡", layout="centered", initial_sidebar_state="collapsed",
     )
     inject_css()

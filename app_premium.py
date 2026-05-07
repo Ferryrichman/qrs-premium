@@ -1126,10 +1126,73 @@ def render_momentum_table(prices: pd.DataFrame):
 
 
 # ══════════════════════════════════════════════════════════
-#  AUTH — password protection for paid subscribers
+#  AUTH — FRM HMAC token gate (federated with POPI subscription)
+#  Token format: <payload_b64>.<sig_b64>  where payload = {plan, exp}
+#  Verification is fully offline (no API call) — independence preserved.
 # ══════════════════════════════════════════════════════════
+import os
+import hmac
+import hashlib
+import base64
+import json
+
+# Plans that this app accepts.
+#   - etf-prem-*   : single-product Premium subscription
+#   - etf-bundle-* : ETF combo (Standard + Premium together)
+#   - frm-bundle-* : full FRM bundle (POPI + ETF + MPF + Stock)
+#   - admin        : master key
+# (Standard-only / POPI-only / MPF-only plans are rejected.)
+ALLOWED_PLANS_FOR_THIS_APP = {
+    "etf-prem-monthly", "etf-prem-annual", "etf-prem-lifetime",
+    "etf-bundle-monthly", "etf-bundle-annual", "etf-bundle-lifetime",
+    "frm-bundle-monthly", "frm-bundle-annual", "frm-bundle-lifetime",
+    "admin",
+}
+
+
+def _frm_secret() -> bytes:
+    """Load shared HMAC secret. Set in Streamlit Cloud → Settings → Secrets:
+        FRM_SUB_SECRET = "<same hex as POPI backend>"
+    """
+    try:
+        return st.secrets["FRM_SUB_SECRET"].encode("utf-8")
+    except (KeyError, FileNotFoundError):
+        return os.environ.get("FRM_SUB_SECRET", "").encode("utf-8")
+
+
+def _verify_frm_token(token: str):
+    """Verify HMAC-signed token. Returns payload dict if valid, else None.
+    Mirrors POPI backend/main.py::_verify_sub_token exactly."""
+    secret = _frm_secret()
+    if not secret or not token or "." not in token:
+        return None
+    try:
+        p64, s64 = token.rsplit(".", 1)
+        expected = hmac.new(secret, p64.encode(), hashlib.sha256).digest()
+        provided = base64.urlsafe_b64decode(s64 + "=" * (-len(s64) % 4))
+        if not hmac.compare_digest(expected, provided):
+            return None
+        payload = json.loads(base64.urlsafe_b64decode(p64 + "=" * (-len(p64) % 4)))
+        if payload.get("exp", 0) < int(time.time()):
+            return None
+        return payload   # {"plan": str, "exp": int}
+    except Exception:
+        return None
+
+
+def _read_url_token() -> str:
+    """Best-effort read of ?token=... from URL (Streamlit ≥1.30 API)."""
+    try:
+        v = st.query_params.get("token", "")
+        if isinstance(v, list):
+            return v[0] if v else ""
+        return v or ""
+    except Exception:
+        return ""
+
+
 def render_login_page():
-    """Branded login screen shown when user not authenticated."""
+    """Branded gate screen — paste FRM unlock token from ferryrichman.com."""
     st.markdown(
         """
 <div style="max-width: 480px; margin: 60px auto 30px; text-align: center;">
@@ -1153,7 +1216,6 @@ def render_login_page():
         unsafe_allow_html=True,
     )
 
-    # Centered password form
     col_l, col_m, col_r = st.columns([1, 2, 1])
     with col_m:
         st.markdown(
@@ -1163,42 +1225,46 @@ def render_login_page():
     padding: 28px 28px 4px; margin-bottom: 16px;">
     <div style="font-size: 11px; color: #f59e0b; font-weight: 800;
         text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;">
-        🔑 輸入訂閱密碼
+        🔑 貼上解鎖 Token
     </div>
     <div style="font-size: 12px; color: #94a3b8; line-height: 1.6; margin-bottom: 6px;">
-        密碼會喺你每月嘅 Stripe 收據 / WhatsApp 訊息提供。
+        喺 <a href="https://ferryrichman.com" target="_blank"
+        style="color:#f59e0b;text-decoration:none;">ferryrichman.com</a>
+        貼解鎖碼後，撳「💎 進入 Premium」會自動帶 Token 過嚟。
     </div>
 </div>
             """,
             unsafe_allow_html=True,
         )
-        pw = st.text_input(
-            "Password",
+        pasted = st.text_input(
+            "Token",
             type="password",
             label_visibility="collapsed",
-            placeholder="輸入密碼...",
-            key="pw_input",
+            placeholder="貼 Token 或喺 ferryrichman.com 直接 click 進入...",
+            key="frm_token_input",
         )
         submit = st.button("🚀 進入 Premium System", use_container_width=True, type="primary")
 
         if submit:
-            try:
-                expected = st.secrets["access_password"]
-            except (KeyError, FileNotFoundError):
+            secret = _frm_secret()
+            if not secret:
                 st.error(
-                    "⚠️ Server 未設定密碼。請聯絡管理員設置 Streamlit secrets "
-                    "(`access_password` key)。"
+                    "⚠️ Server 未設定 `FRM_SUB_SECRET`。"
+                    "請於 Streamlit Cloud → App settings → Secrets 配置。"
                 )
                 return False
-            if pw == expected:
-                st.session_state["authenticated"] = True
-                st.rerun()
-            elif pw:
-                st.error("❌ 密碼錯誤。請檢查 Stripe 收據或 WhatsApp 訊息。")
+            sub = _verify_frm_token((pasted or "").strip())
+            if not sub:
+                st.error("❌ Token 無效或已過期。請喺 ferryrichman.com 重新解鎖。")
+            elif sub["plan"] not in ALLOWED_PLANS_FOR_THIS_APP:
+                st.error(
+                    "❌ 你嘅訂閱不包含 Premium 訪問權限。"
+                    "請訂閱 ETF Premium、ETF Bundle (Std + Prem) 或全套餐 Bundle。"
+                )
             else:
-                st.warning("請輸入密碼。")
+                st.session_state["frm_sub"] = sub
+                st.rerun()
 
-        # Subscribe link
         st.markdown(
             """
 <div style="text-align:center; margin-top: 28px; padding-top: 20px;
@@ -1206,7 +1272,7 @@ def render_login_page():
     <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">
         仲未訂閱？
     </div>
-    <a href="https://www.quantum-pioneers.com" target="_blank"
+    <a href="https://ferryrichman.com" target="_blank"
        style="display:inline-block; background:#1e293b; color:#cbd5e1;
        text-decoration:none; padding:10px 24px; border-radius:10px;
        font-size:12px; font-weight:700; letter-spacing:0.5px;">
@@ -1220,7 +1286,6 @@ def render_login_page():
             unsafe_allow_html=True,
         )
 
-    # Disclaimer at bottom
     st.markdown(
         """
 <div style="max-width: 480px; margin: 32px auto 0; text-align: center;
@@ -1236,12 +1301,25 @@ def render_login_page():
 
 
 def check_password() -> bool:
-    """Returns True if user is authenticated, False otherwise."""
-    if "authenticated" not in st.session_state:
-        st.session_state["authenticated"] = False
+    """Gate. Returns True if a valid Token unlocks this app, else renders login.
 
-    if st.session_state["authenticated"]:
+    Token sources (in order):
+      1. st.session_state['frm_sub']  — cached after first successful verify
+      2. ?token=... URL query param   — handoff from ferryrichman.com
+      3. Pasted in render_login_page text_input
+    """
+    cached = st.session_state.get("frm_sub")
+    if (cached and cached.get("exp", 0) > int(time.time())
+            and cached.get("plan") in ALLOWED_PLANS_FOR_THIS_APP):
         return True
+
+    url_token = _read_url_token()
+    if url_token:
+        sub = _verify_frm_token(url_token)
+        if sub and sub["plan"] in ALLOWED_PLANS_FOR_THIS_APP:
+            st.session_state["frm_sub"] = sub
+            return True
+        # Invalid URL token — fall through to render login (with implicit error)
 
     return render_login_page()
 

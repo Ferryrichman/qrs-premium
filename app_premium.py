@@ -1324,6 +1324,54 @@ def check_password() -> bool:
     return render_login_page()
 
 
+def _is_admin() -> bool:
+    """Return True if the verified token's plan is 'admin' (Owner)."""
+    return st.session_state.get("frm_sub", {}).get("plan") == "admin"
+
+
+def render_owner_only_placeholder(section_label: str) -> None:
+    """Render an intellectual-property notice in place of admin-only content.
+
+    Shown to paid subscribers (non-admin) when they reach a section reserved
+    for the Owner — e.g. detailed momentum trace tables, methodology spec.
+    """
+    st.markdown(
+        f"""
+<div style="background:linear-gradient(135deg,#0d1424 0%,#1a1230 100%);
+    border:1.5px dashed #475569;border-radius:14px;padding:32px 28px;
+    margin-top:14px;text-align:center;">
+  <div style="font-size:34px;margin-bottom:14px;">🔒</div>
+  <div style="font-size:12px;color:#fbbf24;font-weight:800;
+       text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">
+    Proprietary · FerryRichMan Limited
+  </div>
+  <div style="font-size:14px;color:#94a3b8;line-height:1.7;
+       max-width:540px;margin:0 auto 14px;">
+    <strong style="color:#e2e8f0;">{section_label}</strong>
+    為本公司知識產權核心資料，<br>
+    包括訊號計算公式、權重參數、進出規則嘅完整透明明細，<br>
+    保留為內部資料以保障策略嘅獨特性。
+  </div>
+  <div style="font-size:11.5px;color:#64748b;line-height:1.6;
+       max-width:480px;margin:0 auto 20px;font-style:italic;">
+    Signal computation formulas, weighting parameters, and per-month
+    trace details are retained as proprietary IP of FerryRichMan
+    Limited to protect strategy uniqueness.
+  </div>
+  <a href="https://wa.me/85264216504?text=Hi%20FerryRichMan%2C%20我想了解策略合作。"
+     target="_blank"
+     style="display:inline-block;background:#1e293b;color:#fbbf24;
+     text-decoration:none;padding:9px 22px;border-radius:8px;
+     font-size:12px;font-weight:700;letter-spacing:0.5px;
+     border:1px solid #f59e0b55;">
+    💬 研究合作請聯絡
+  </a>
+</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 # ══════════════════════════════════════════════════════════
 #  MAIN
 # ══════════════════════════════════════════════════════════
@@ -1385,13 +1433,19 @@ def main():
     section_header("⚠️", "風險警告 · Risk Warnings")
     render_warnings_section()
 
-    # Methodology — for verification by anyone
+    # Methodology — Owner-only (proprietary spec)
     section_header("📋", "方法論 · Methodology")
-    render_methodology_section()
+    if _is_admin():
+        render_methodology_section()
+    else:
+        render_owner_only_placeholder("方法論 · Methodology Spec")
 
-    # Detail table
+    # Detail table — Owner-only (per-month trace contains full strategy logic)
     section_header("🔢", "動力計算明細 · Per-Month Trace")
-    render_momentum_table(prices)
+    if _is_admin():
+        render_momentum_table(prices)
+    else:
+        render_owner_only_placeholder("動力計算明細 · Per-Month Momentum Trace")
 
     render_disclaimer()
     render_footer()

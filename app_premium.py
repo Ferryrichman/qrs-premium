@@ -1149,6 +1149,23 @@ ALLOWED_PLANS_FOR_THIS_APP = {
     "admin",
 }
 
+# Product key for THIS app — checked against token's `unlocks` array.
+# Customers with a multi-product code unlocking [etf-prem, ...] get in
+# regardless of their `plan` field.
+THIS_APP_PRODUCT = "etf-prem"
+
+
+def _has_access(sub: dict) -> bool:
+    """Check token grants access to this app.
+    Priority: unlocks array (new) → plan whitelist (legacy fallback).
+    """
+    if not sub:
+        return False
+    unlocks = sub.get("unlocks") or []
+    if THIS_APP_PRODUCT in unlocks:
+        return True
+    return sub.get("plan") in ALLOWED_PLANS_FOR_THIS_APP
+
 
 def _frm_secret() -> bytes:
     """Load shared HMAC secret. Set in Streamlit Cloud → Settings → Secrets:
@@ -1310,13 +1327,13 @@ def check_password() -> bool:
     """
     cached = st.session_state.get("frm_sub")
     if (cached and cached.get("exp", 0) > int(time.time())
-            and cached.get("plan") in ALLOWED_PLANS_FOR_THIS_APP):
+            and _has_access(cached)):
         return True
 
     url_token = _read_url_token()
     if url_token:
         sub = _verify_frm_token(url_token)
-        if sub and sub["plan"] in ALLOWED_PLANS_FOR_THIS_APP:
+        if sub and _has_access(sub):
             st.session_state["frm_sub"] = sub
             return True
         # Invalid URL token — fall through to render login (with implicit error)

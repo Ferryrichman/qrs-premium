@@ -236,22 +236,6 @@ def render_rebalance_notice(info: dict):
         color, bg, border_c = "#4ade80", "#0f1a12", "#4ade8033"
         icon, urgency = "📅", "正常倒數"
 
-    changed = info.get("changed", False)
-    if "current_1" in info:
-        c1, c2 = info["current_1"], info["current_2"]
-        p1, p2 = info.get("prev_1", "?"), info.get("prev_2", "?")
-        if changed:
-            change_html = f'<span style="color:#fbbf24;">🔄 持倉變動：{p1}+{p2} &rarr; {c1}+{c2}</span>'
-        else:
-            change_html = f'<span style="color:#4ade80;">✅ 維持：{c1} (60%) + {c2} (40%)</span>'
-    else:
-        cur = info.get("current", "?")
-        prev = info.get("prev", "?")
-        if changed:
-            change_html = f'<span style="color:#fbbf24;">🔄 持倉變動：{prev} &rarr; {cur}</span>'
-        else:
-            change_html = f'<span style="color:#4ade80;">✅ 維持持倉：{cur}</span>'
-
     rebal_str = rebal.strftime("%Y-%m-%d (%a)")
 
     st.markdown(
@@ -269,9 +253,6 @@ def render_rebalance_notice(info: dict):
                          margin-left:8px;">
                 {days_left} 天後 &middot; {urgency}
             </span>
-        </div>
-        <div style="font-size:12px;">
-            {change_html}
         </div>
     </div>
 </div>

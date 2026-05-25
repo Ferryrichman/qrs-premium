@@ -541,16 +541,17 @@ def calc_annual(prices: pd.DataFrame) -> dict:
 #  UI COMPONENTS
 # ══════════════════════════════════════════════════════════
 def render_header():
+    components.html("""
+<a href="https://ferryrichman.com" target="_blank"
+   style="display:inline-block; background:#1e293b; color:#f59e0b;
+   text-decoration:none; padding:6px 14px; border-radius:8px;
+   font-size:11px; font-weight:700; border:1px solid #f59e0b33;
+   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+   🏠 回主頁
+</a>
+""", height=38)
     st.markdown(
         """
-<div style="text-align:left; padding: 8px 0 0;">
-    <a href="https://ferryrichman.com" target="_blank"
-       style="display:inline-block; background:#1e293b; color:#f59e0b;
-       text-decoration:none; padding:6px 14px; border-radius:8px;
-       font-size:11px; font-weight:700; border:1px solid #f59e0b33;">
-       🏠 回主頁
-    </a>
-</div>
 <div style="text-align:center; padding: 24px 0 28px; border-bottom: 1px solid #1e293b; margin-bottom: 24px;">
     <div style="display:inline-block; background: linear-gradient(135deg,#f59e0b,#ef4444);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -1237,17 +1238,22 @@ def render_footer():
         &copy; {year} FerryRichMan Limited &middot; All Rights Reserved<br>
         FRM Premium ETF System (Strategy C) &middot; Powered by Python &amp; Streamlit
     </div>
-    <a href="https://ferryrichman.com" target="_blank"
-       style="display:inline-block; margin-top:14px; background:#1e293b;
-       color:#f59e0b; text-decoration:none; padding:10px 28px;
-       border-radius:10px; font-size:13px; font-weight:700;
-       border:1px solid #f59e0b33; letter-spacing:0.5px;">
-       🏠 回主頁 &middot; ferryrichman.com
-    </a>
 </div>
         """,
         unsafe_allow_html=True,
     )
+    components.html("""
+<div style="text-align:center;">
+    <a href="https://ferryrichman.com" target="_blank"
+       style="display:inline-block; background:#1e293b;
+       color:#f59e0b; text-decoration:none; padding:10px 28px;
+       border-radius:10px; font-size:13px; font-weight:700;
+       border:1px solid #f59e0b33; letter-spacing:0.5px;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+       🏠 回主頁 · ferryrichman.com
+    </a>
+</div>
+""", height=50)
 
 
 def section_header(icon: str, title: str):

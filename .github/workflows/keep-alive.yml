@@ -19,5 +19,5 @@ jobs:
       - name: Ping FRM Premium ETF System
         run: |
           CODE=$(curl -sS -o /dev/null -w "%{http_code}" \
-                 "https://frm-qrs-premium.streamlit.app/" || true)
+                 "https://frmetf-premium.streamlit.app/" || true)
           echo "HTTP $CODE at $(date -u +%Y-%m-%dT%H:%M:%SZ)"

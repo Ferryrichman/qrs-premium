@@ -541,15 +541,7 @@ def calc_annual(prices: pd.DataFrame) -> dict:
 #  UI COMPONENTS
 # ══════════════════════════════════════════════════════════
 def render_header():
-    components.html("""
-<a href="https://ferryrichman.com" target="_blank"
-   style="display:inline-block; background:#1e293b; color:#f59e0b;
-   text-decoration:none; padding:6px 14px; border-radius:8px;
-   font-size:11px; font-weight:700; border:1px solid #f59e0b33;
-   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-   🏠 回主頁
-</a>
-""", height=38)
+    st.link_button("🏠 回主頁", "https://ferryrichman.com", use_container_width=False)
     st.markdown(
         """
 <div style="text-align:center; padding: 24px 0 28px; border-bottom: 1px solid #1e293b; margin-bottom: 24px;">
@@ -1242,18 +1234,9 @@ def render_footer():
         """,
         unsafe_allow_html=True,
     )
-    components.html("""
-<div style="text-align:center;">
-    <a href="https://ferryrichman.com" target="_blank"
-       style="display:inline-block; background:#1e293b;
-       color:#f59e0b; text-decoration:none; padding:10px 28px;
-       border-radius:10px; font-size:13px; font-weight:700;
-       border:1px solid #f59e0b33; letter-spacing:0.5px;
-       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-       🏠 回主頁 · ferryrichman.com
-    </a>
-</div>
-""", height=50)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.link_button("🏠 回主頁 · ferryrichman.com", "https://ferryrichman.com", use_container_width=True)
 
 
 def section_header(icon: str, title: str):

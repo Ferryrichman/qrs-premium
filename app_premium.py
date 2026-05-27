@@ -119,14 +119,23 @@ div[data-testid="stTextArea"] label { display: none; }
 [data-testid="stMetricDelta"] { font-size: 13px !important; }
 
 /* ── Content Protection ── */
-[data-testid="stAppViewContainer"], [data-testid="stMarkdownContainer"],
-.stTabs, .stDataFrame {
+[data-testid="stAppViewContainer"],
+[data-testid="stAppViewContainer"] *,
+[data-testid="stMarkdownContainer"],
+[data-testid="stMarkdownContainer"] *,
+.stTabs, .stTabs *,
+.stDataFrame, .stDataFrame *,
+pre, code, [data-testid="stCode"],
+[data-testid="stCodeBlock"], [data-testid="stCodeBlock"] * {
     -webkit-user-select: none !important;
     -moz-user-select: none !important;
     -ms-user-select: none !important;
     user-select: none !important;
 }
-input, textarea, [contenteditable] {
+[data-testid="stCodeBlock"] button { display: none !important; }
+[data-testid="stAppViewContainer"] input[type="text"],
+[data-testid="stAppViewContainer"] input[type="password"],
+[data-testid="stAppViewContainer"] textarea {
     -webkit-user-select: text !important;
     user-select: text !important;
 }
@@ -149,23 +158,41 @@ img { -webkit-user-drag: none !important; }
 # ══════════════════════════════════════════════════════════
 
 def inject_content_protection():
-    """Block right-click, copy shortcuts, F12, PrintScreen via parent-frame JS."""
+    """Block right-click, copy, keyboard shortcuts via parent-frame JS."""
     components.html("""
 <script>
 (function(){
-    var d = window.parent.document;
-    d.addEventListener('contextmenu', function(e){ e.preventDefault(); });
-    d.addEventListener('keydown', function(e){
-        var block = false;
-        if (e.ctrlKey || e.metaKey) {
-            var k = e.key.toLowerCase();
-            if ('cusp'.indexOf(k) !== -1) block = true;
-            if (e.shiftKey && 'ijc'.indexOf(k) !== -1) block = true;
+    try {
+        var d = window.parent.document;
+        d.addEventListener('contextmenu', function(e){ e.preventDefault(); }, true);
+        d.addEventListener('copy', function(e){ e.preventDefault(); }, true);
+        d.addEventListener('cut', function(e){ e.preventDefault(); }, true);
+        d.addEventListener('keydown', function(e){
+            var block = false;
+            if (e.ctrlKey || e.metaKey) {
+                var k = e.key.toLowerCase();
+                if ('cusp'.indexOf(k) !== -1) block = true;
+                if (e.shiftKey && 'ijc'.indexOf(k) !== -1) block = true;
+            }
+            if (e.key === 'F12' || e.key === 'PrintScreen') block = true;
+            if (block) { e.preventDefault(); e.stopPropagation(); }
+        }, true);
+        d.addEventListener('dragstart', function(e){ e.preventDefault(); }, true);
+    } catch(e) {}
+    /* Also protect inside this iframe's parent frames */
+    try {
+        var frames = window.parent.document.querySelectorAll('iframe');
+        for (var i = 0; i < frames.length; i++) {
+            try {
+                var fd = frames[i].contentDocument;
+                if (fd) {
+                    fd.addEventListener('copy', function(e){ e.preventDefault(); }, true);
+                    fd.addEventListener('cut', function(e){ e.preventDefault(); }, true);
+                    fd.addEventListener('contextmenu', function(e){ e.preventDefault(); }, true);
+                }
+            } catch(x) {}
         }
-        if (e.key === 'F12' || e.key === 'PrintScreen') block = true;
-        if (block) { e.preventDefault(); e.stopPropagation(); }
-    }, true);
-    d.addEventListener('dragstart', function(e){ e.preventDefault(); });
+    } catch(e) {}
 })();
 </script>
 """, height=0)
@@ -765,7 +792,8 @@ body {{ margin:0; padding:10px 0 4px; font-family:-apple-system,BlinkMacSystemFo
 .lbl {{ font-size:11px; color:#64748b; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px; }}
 .msg {{ background:#060c1a; border:1.5px dashed #334155; border-radius:12px; padding:16px 18px;
        font-size:13px; color:#94a3b8; line-height:1.85; font-family:'Courier New',monospace;
-       margin-bottom:14px; word-break:break-word; }}
+       margin-bottom:14px; word-break:break-word;
+       -webkit-user-select:none; user-select:none; }}
 .btn {{ display:block; width:100%; background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff;
        border: none; border-radius: 12px; padding: 15px 0; font-size: 15px; font-weight: 700;
        cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 4px 18px rgba(245,158,11,0.4);

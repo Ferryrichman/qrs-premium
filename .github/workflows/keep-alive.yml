@@ -1,23 +1,55 @@
 name: Keep Alive
 
-# Ping the Streamlit app every 25 minutes to prevent free-tier sleep.
-# Streamlit Cloud puts apps to sleep after ~7 days of no traffic.
-# This lightweight job (~10s) keeps the app permanently awake.
+# Visit the Streamlit app with a real headless browser to prevent
+# free-tier sleep. Streamlit Cloud tracks WebSocket sessions, not HTTP
+# pings — curl alone (HTTP 303 redirect) does NOT count as traffic.
 #
-# Free-tier budget (public repo): unlimited minutes — no concern.
+# Playwright opens the page, waits for WebSocket to establish,
+# then closes. This registers as a genuine user visit.
+#
+# Runs every 5 hours — Streamlit sleeps after ~7 days of inactivity,
+# so 4-5 visits/day is more than enough.
+#
+# GitHub Actions free-tier: 2000 min/month. Each run ~1.5 min.
+# 5 runs/day × 30 days × 1.5 min = ~225 min/month — well under budget.
 
 on:
   schedule:
-    - cron: '*/25 * * * *'   # every 25 min — 3x/hour
-  workflow_dispatch:          # allow manual trigger from Actions tab
+    - cron: '15 */5 * * *'    # every 5 hours at :15
+  workflow_dispatch:           # allow manual trigger from Actions tab
 
 jobs:
-  ping:
+  visit:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
     steps:
-      - name: Ping FRM Premium ETF System
+      - name: Install Playwright
         run: |
-          CODE=$(curl -sS -o /dev/null -w "%{http_code}" \
-                 "https://frmetf-premium.streamlit.app/" || true)
-          echo "HTTP $CODE at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          npm init -y --silent
+          npm install playwright --silent
+          npx playwright install chromium --with-deps
+
+      - name: Visit FRM Premium ETF System
+        run: |
+          node -e "
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch();
+            const page = await browser.newPage();
+            try {
+              console.log('Visiting frmetf-premium.streamlit.app ...');
+              await page.goto('https://frmetf-premium.streamlit.app/', {
+                waitUntil: 'networkidle',
+                timeout: 90000
+              });
+              // Wait for Streamlit WebSocket to establish
+              await page.waitForTimeout(10000);
+              const title = await page.title();
+              console.log('OK — title:', title, 'at', new Date().toISOString());
+            } catch (err) {
+              console.error('WARN:', err.message);
+            } finally {
+              await browser.close();
+            }
+          })();
+          "

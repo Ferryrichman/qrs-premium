@@ -460,6 +460,9 @@ def get_current_info(prices: pd.DataFrame) -> dict:
     ytd_months = ytd_months[(ytd_months.index.year == yr) & (ytd_months.index <= cur_row)]
     ytd_ret = float((1 + ytd_months).prod() - 1) if len(ytd_months) > 0 else None
 
+    # MTD return — daily data for current month's holdings
+    mtd_ret = _get_mtd_return(cur_h1, cur_h2, _hk_date_key())
+
     return {
         "current_1": cur_h1, "current_2": cur_h2,
         "raw_1": cur_raw1, "raw_2": cur_raw2,
@@ -467,10 +470,36 @@ def get_current_info(prices: pd.DataFrame) -> dict:
         "changed": (cur_h1 != prev_h1) or (cur_h2 != prev_h2),
         "last_ret": float(last_ret) if pd.notna(last_ret) else None,
         "ytd_ret": ytd_ret,
+        "mtd_ret": mtd_ret,
         "scores": scores,
         "data_date": cur_row,
         "now": now,
     }
+
+
+@st.cache_data(show_spinner=False)
+def _get_mtd_return(h1: str, h2: str, date_key: str = ""):
+    """MTD return using daily prices for current holdings (60/40 weighted)."""
+    try:
+        today = datetime.today()
+        month_start = today.replace(day=1) - timedelta(days=1)
+        for ticker, weight in [(h1, WEIGHT1), (h2, WEIGHT2)]:
+            daily = _get_daily_ohlc(ticker, month_start, today + timedelta(days=1))
+            daily = daily[daily.index.month == today.month]
+            if daily.empty:
+                return None
+        mtd = 0.0
+        for ticker, weight in [(h1, WEIGHT1), (h2, WEIGHT2)]:
+            daily = _get_daily_ohlc(ticker, month_start, today + timedelta(days=1))
+            daily = daily[daily.index.month == today.month]
+            first_open = float(daily["Open"].iloc[0])
+            last_close = float(daily["Close"].iloc[-1])
+            if pd.isna(first_open) or pd.isna(last_close) or first_open == 0:
+                return None
+            mtd += weight * (last_close / first_open - 1)
+        return mtd
+    except Exception:
+        return None
 
 
 def calc_stats(prices: pd.DataFrame) -> dict:
@@ -650,6 +679,16 @@ def render_dual_signal_card(info: dict):
     else:
         ytd_html = ""
 
+    mtd_ret = info.get("mtd_ret")
+    if mtd_ret is not None:
+        mtd_pct = f"{mtd_ret*100:+.1f}%"
+        m_clr = "#4ade80" if mtd_ret >= 0 else "#f87171"
+        m_bg = "#052e16" if mtd_ret >= 0 else "#450a0a"
+        mtd_html = (f'<span style="background:{m_bg};color:{m_clr};{badge_style}">'
+                    f'📊 MTD {mtd_pct}</span>')
+    else:
+        mtd_html = ""
+
     components.html(
         f"""
 <!DOCTYPE html><html><head><meta charset="UTF-8"><style>
@@ -685,7 +724,7 @@ body {{ background:transparent; padding:0; margin:0; }}
       <div class="label">{month_str} 訊號 · STRATEGY C</div>
       <div class="date">數據截至 {data_str}</div>
     </div>
-    <div class="badges">{change_html}{ret_html}{ytd_html}</div>
+    <div class="badges">{change_html}{ret_html}{mtd_html}{ytd_html}</div>
   </div>
   <div class="holdings">
     <div class="holding h1">

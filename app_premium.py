@@ -453,12 +453,20 @@ def get_current_info(prices: pd.DataFrame) -> dict:
     last_ret = prices.loc[cur_row, "signal_return"]
 
     scores = {t: float(prices.loc[cur_row, f"score_{t}"]) for t in BASE_TICKERS}
+
+    # YTD return — cumulative from Jan of the signal year to cur_row
+    yr = cur_row.year
+    ytd_months = prices["signal_return"].dropna()
+    ytd_months = ytd_months[(ytd_months.index.year == yr) & (ytd_months.index <= cur_row)]
+    ytd_ret = float((1 + ytd_months).prod() - 1) if len(ytd_months) > 0 else None
+
     return {
         "current_1": cur_h1, "current_2": cur_h2,
         "raw_1": cur_raw1, "raw_2": cur_raw2,
         "prev_1": prev_h1, "prev_2": prev_h2,
         "changed": (cur_h1 != prev_h1) or (cur_h2 != prev_h2),
         "last_ret": float(last_ret) if pd.notna(last_ret) else None,
+        "ytd_ret": ytd_ret,
         "scores": scores,
         "data_date": cur_row,
         "now": now,
@@ -608,22 +616,39 @@ def render_dual_signal_card(info: dict):
     lev1 = "⚡ 2x" if h1 != raw1 else ""
     lev2 = "⚡ 2x" if h2 != raw2 else ""
 
+    prev_h1, prev_h2 = info["prev_1"], info["prev_2"]
     if changed:
+        parts = []
+        if h1 != prev_h1:
+            parts.append(f"{prev_h1}→{h1}")
+        if h2 != prev_h2:
+            parts.append(f"{prev_h2}→{h2}")
+        detail = "  ".join(parts)
         change_html = (f'<span style="background:#451a03;color:#fbbf24;padding:6px 14px;'
-                       f'border-radius:100px;font-size:12px;font-weight:700;">🔄 換倉訊號</span>')
+                       f'border-radius:100px;font-size:12px;font-weight:700;">🔄 {detail}</span>')
     else:
         change_html = (f'<span style="background:#052e16;color:#4ade80;padding:6px 14px;'
                        f'border-radius:100px;font-size:12px;font-weight:700;">✅ 維持持倉</span>')
 
+    badge_style = 'padding:6px 14px;border-radius:100px;font-size:12px;font-weight:700;'
     if last_ret is not None:
         pct = f"{last_ret*100:+.2f}%"
         r_clr = "#4ade80" if last_ret >= 0 else "#f87171"
         r_bg = "#052e16" if last_ret >= 0 else "#450a0a"
-        ret_html = (f'<span style="background:{r_bg};color:{r_clr};padding:6px 14px;'
-                    f'border-radius:100px;font-size:12px;font-weight:700;">'
+        ret_html = (f'<span style="background:{r_bg};color:{r_clr};{badge_style}">'
                     f'{"↑" if last_ret >= 0 else "↓"} 上月回報 {pct}</span>')
     else:
         ret_html = ""
+
+    ytd_ret = info.get("ytd_ret")
+    if ytd_ret is not None:
+        ytd_pct = f"{ytd_ret*100:+.1f}%"
+        y_clr = "#4ade80" if ytd_ret >= 0 else "#f87171"
+        y_bg = "#052e16" if ytd_ret >= 0 else "#450a0a"
+        ytd_html = (f'<span style="background:{y_bg};color:{y_clr};{badge_style}">'
+                    f'📅 YTD {ytd_pct}</span>')
+    else:
+        ytd_html = ""
 
     components.html(
         f"""
@@ -660,7 +685,7 @@ body {{ background:transparent; padding:0; margin:0; }}
       <div class="label">{month_str} 訊號 · STRATEGY C</div>
       <div class="date">數據截至 {data_str}</div>
     </div>
-    <div class="badges">{change_html}{ret_html}</div>
+    <div class="badges">{change_html}{ret_html}{ytd_html}</div>
   </div>
   <div class="holdings">
     <div class="holding h1">

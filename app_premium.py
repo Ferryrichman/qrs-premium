@@ -705,7 +705,7 @@ body {{ background:transparent; padding:0; margin:0; }}
     flex-wrap:wrap; gap:8px; margin-bottom:18px; }}
 .label {{ font-size:11px; color:#64748b; font-weight:800; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px; }}
 .date  {{ font-size:11px; color:#475569; }}
-.badges {{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }}
+.badges {{ display:grid; grid-template-columns:auto auto; gap:5px; justify-items:end; }}
 .holdings {{ display:flex; gap:14px; align-items:stretch; }}
 .holding {{ flex: 1; padding: 14px; border-radius: 14px; border: 1.5px solid; }}
 .holding.h1 {{ background: rgba(99,102,241,0.08); border-color: #6366f155; }}

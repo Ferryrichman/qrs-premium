@@ -452,12 +452,33 @@ def get_current_info(prices: pd.DataFrame) -> dict:
     prev_h2 = prices.loc[prev_row, "held_2"]
     last_ret = prices.loc[cur_row, "signal_return"]
 
+    # Fallback: if next month's open isn't available yet, use close/open for the month
+    if pd.isna(last_ret):
+        try:
+            r1 = r2 = np.nan
+            for h, target in [(prev_h1, "r1"), (prev_h2, "r2")]:
+                o = prices.loc[cur_row, f"{h}_open"]
+                c = prices.loc[cur_row, h]
+                if pd.notna(o) and pd.notna(c) and o != 0:
+                    val = c / o - 1
+                    if target == "r1":
+                        r1 = val
+                    else:
+                        r2 = val
+            if pd.notna(r1) and pd.notna(r2):
+                last_ret = WEIGHT1 * r1 + WEIGHT2 * r2
+        except Exception:
+            pass
+
     scores = {t: float(prices.loc[cur_row, f"score_{t}"]) for t in BASE_TICKERS}
 
     # YTD return — cumulative from Jan of the signal year to cur_row
     yr = cur_row.year
     ytd_months = prices["signal_return"].dropna()
     ytd_months = ytd_months[(ytd_months.index.year == yr) & (ytd_months.index <= cur_row)]
+    # Include fallback close-based return for latest month if signal_return was NaN
+    if pd.notna(last_ret) and pd.isna(prices.loc[cur_row, "signal_return"]):
+        ytd_months = pd.concat([ytd_months, pd.Series([last_ret], index=[cur_row])])
     ytd_ret = float((1 + ytd_months).prod() - 1) if len(ytd_months) > 0 else None
 
     # MTD return — daily data for current month's holdings

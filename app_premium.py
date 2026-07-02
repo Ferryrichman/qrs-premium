@@ -822,11 +822,15 @@ def render_whatsapp_section(info: dict, stats: dict):
     raw1, raw2 = info["raw_1"], info["raw_2"]
     prev_h1, prev_h2 = info["prev_1"], info["prev_2"]
     last_ret = info["last_ret"]
+    ytd_ret  = info.get("ytd_ret")
+    mtd_ret  = info.get("mtd_ret")
     now = info["now"]
     changed = info["changed"]
 
     month_str = f"{now.month}月{now.year}"
     ret_str = f"{last_ret*100:.2f}%" if last_ret is not None else "N/A"
+    mtd_str = f"{mtd_ret*100:+.2f}%" if mtd_ret is not None else "N/A"
+    ytd_str = f"{ytd_ret*100:+.2f}%" if ytd_ret is not None else "N/A"
     lev1 = " (2x)" if h1 != raw1 else ""
     lev2 = " (2x)" if h2 != raw2 else ""
 
@@ -849,11 +853,13 @@ def render_whatsapp_section(info: dict, stats: dict):
     msg = (
         f"📊【FRM ETF Premium Signal】{month_str}\n"
         f"\n"
-        f"🥇 #1 主倉 (60%): {h1}{lev1}  {ETF_INFO[h1]['name']}\n"
-        f"🥈 #2 副倉 (40%): {h2}{lev2}  {ETF_INFO[h2]['name']}\n"
+        f"🥇 #1 主倉 (60%): {h1}{lev1}\n"
+        f"🥈 #2 副倉 (40%): {h2}{lev2}\n"
         f"\n"
         f"{change_line}\n"
         f"📈 上月策略回報：{ret_str}\n"
+        f"📊 本月MTD：{mtd_str}\n"
+        f"📅 YTD：{ytd_str}\n"
         f"\n"
         f"📅 執行時間：本月第一個交易日，開市價買入\n"
         f"⏰ 執行 60% / 40% 嘅資金分配\n"
@@ -863,6 +869,7 @@ def render_whatsapp_section(info: dict, stats: dict):
         f"{yr3}\n{yr5}\n{yr10}\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
         f"@FRM ETF Premium · FerryRichMan Limited\n"
+        f"🌐 ferryrichman.com\n"
         f"（只供教學及記錄用途，不構成任何投資建議）"
     )
 

@@ -41,8 +41,8 @@ git branch -M main
 git push -u origin main
 ```
 
-⚠️ **IMPORTANT**: The `.gitignore` excludes `.streamlit/secrets.toml` so your password
-won't leak. Only the `.example` template is committed.
+⚠️ **IMPORTANT**: The `.gitignore` excludes `.streamlit/secrets.toml` so the shared
+HMAC secret won't leak. Only the `.example` template is committed.
 
 ### Step 2: Deploy on Streamlit Cloud
 
@@ -53,7 +53,7 @@ won't leak. Only the `.example` template is committed.
 5. **Branch**: `main`
 6. Click **"Advanced settings"** → **"Secrets"**, paste:
    ```toml
-   access_password = "YOUR_ACTUAL_PASSWORD_HERE"
+   FRM_SUB_SECRET = "SAME_HEX_AS_POPI_BACKEND_FRM_SUB_SECRET"
    ```
 7. Click **"Deploy"**
 
@@ -61,33 +61,62 @@ You'll get a URL like `https://qrs-premium-XXXX.streamlit.app/`
 
 ### Step 3: Test
 
-- Visit the URL → should show login page
-- Enter the password you set in step 6 → should unlock the dashboard
+- Visit the URL → should show the "貼上解鎖 Token" login page
+- Paste a valid token (or click through from ferryrichman.com, which appends
+  `?token=...` to the URL) → should unlock the dashboard
 
-### Step 4: Distribute Password to Subscribers
+### Step 4: How Subscribers Get In
 
-Update your Stripe receipt template / WhatsApp welcome message to include:
+This app does **not** use a static password. Access is gated by a short-lived,
+HMAC-signed token issued by the POPI backend when a customer redeems their
+subscription code on ferryrichman.com:
 
-```
-🔑 你的 Premium Access Password:
-   YOUR_PASSWORD_HERE
+1. **Token issuance**: customer enters their unlock code on ferryrichman.com →
+   POPI backend's `/api/subscription/redeem` verifies it and signs a token
+   encoding `{plan, exp}` with the shared `FRM_SUB_SECRET` key
+   (format: `<payload_b64>.<sig_b64>`).
+2. **Handoff**: ferryrichman.com hands the token to this app either as a
+   `?token=...` URL query param (one-click "💎 進入 Premium" flow) or the
+   customer pastes it directly into the login box.
+3. **Verification**: `_verify_frm_token()` in `app_premium.py` (function
+   `check_password()` is the gate) re-derives the HMAC signature locally with
+   the same `FRM_SUB_SECRET` — no API call back to POPI is needed, so this
+   app can verify offline. It also checks the token hasn't expired (`exp`)
+   and that the plan is one of `ALLOWED_PLANS_FOR_THIS_APP` (or the token's
+   `unlocks` array includes `etf-prem`).
+4. **Single-device enforcement**: once verified, the token's session is
+   registered server-side (`_register_token_session`). If the same token is
+   used to log in from a second device, the first session is invalidated
+   (admin plan is exempt from this check).
 
-🔗 Premium Dashboard:
-   https://qrs-premium-XXXX.streamlit.app/
-
-每月第一個交易日早上 HKT 09:00 後 dashboard 會更新最新訊號。
-WhatsApp 群組亦會同步發送。
-```
+Because verification is fully offline, this app has **no direct dependency**
+on the POPI backend being reachable at request time — it only needs to share
+the same `FRM_SUB_SECRET` value.
 
 ---
 
-## 🔄 Updating the Password
+## 🔄 Operator Tasks
 
-If you need to rotate the password (e.g., quarterly for security):
+**Rotating the shared secret** (e.g., quarterly for security):
 
-1. Streamlit Cloud → App settings → Secrets → update `access_password`
-2. Save (app auto-restarts)
-3. Email/WhatsApp new password to all active subscribers
+1. Generate a new key: `python -c "import secrets; print(secrets.token_hex(32))"`
+2. Update `FRM_SUB_SECRET` in **every** FRM service that verifies these
+   tokens (POPI backend + this app + any other product app) — they must all
+   match, or existing tokens will fail verification everywhere.
+3. Streamlit Cloud → App settings → Secrets → update `FRM_SUB_SECRET` → Save
+   (app auto-restarts).
+4. Previously issued tokens signed with the old secret stop working
+   immediately; affected subscribers must re-redeem their code on
+   ferryrichman.com to get a freshly signed token.
+
+**Granting/revoking access**: handled entirely on the POPI backend side
+(subscription plan + `unlocks` array control which tokens pass
+`_has_access()` here) — there is nothing to configure in this repo per
+subscriber.
+
+**Forcing a subscriber to re-login on a new device**: nothing to do manually
+— logging in from a second device automatically kicks the first session
+(see Step 4 above).
 
 ---
 

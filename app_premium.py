@@ -34,6 +34,7 @@ from academic_validation_ui import render_academic_validation
 from dateutil.relativedelta import relativedelta
 import plotly.graph_objects as go
 import time
+import random
 import warnings
 warnings.filterwarnings("ignore")
 import uuid
@@ -316,14 +317,16 @@ def _get_daily_ohlc(t: str, start, end) -> pd.DataFrame:
         result["Close"] = adj_c
         return result.sort_index()
 
-    for attempt in range(4):
+    backoff_schedule = [2, 5, 10]  # seconds, +0-1s jitter — E3 retry-with-backoff
+    for attempt in range(len(backoff_schedule) + 1):
         try:
             raw = yf.download(t, start=start_str, end=end_str, progress=False, auto_adjust=True)
             if not raw.empty:
                 return _extract(raw)
         except Exception:
             pass
-        time.sleep(2 ** attempt)
+        if attempt < len(backoff_schedule):
+            time.sleep(backoff_schedule[attempt] + random.uniform(0, 1))
     return pd.DataFrame(columns=["Open", "Close"])
 
 
@@ -340,7 +343,7 @@ def load_prices(date_key: str = "") -> pd.DataFrame:
     for t in ALL_TICKERS:
         daily = _get_daily_ohlc(t, start, end)
         if daily.empty or daily["Close"].dropna().empty:
-            st.error(f"⚠️ 無法從 Yahoo Finance 下載 **{t}** 數據。\n\nYahoo 限流，請等 1-2 分鐘後 F5。")
+            st.error(f"⚠️ 無法從 Yahoo Finance 下載 **{t}** 數據（已重試 3 次）。\n\nYahoo 限流，請等 1-2 分鐘後 F5。")
             st.stop()
         close_frames[t] = daily["Close"].resample("ME").last()
         open_frames[t] = daily["Open"].resample("ME").first()

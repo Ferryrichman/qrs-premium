@@ -917,7 +917,7 @@ function cp() {{
 </script>
 </body></html>
         """,
-        height=620, scrolling=False,
+        height=760, scrolling=False,
     )
 
 

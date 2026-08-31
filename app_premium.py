@@ -923,6 +923,9 @@ def render_whatsapp_section(info: dict, stats: dict):
         f"回測 CAGR：{stats['cagr']*100:.1f}% {bt_period}  |  MDD：{stats['mdd']*100:.1f}%\n"
         f"Sharpe：{stats['sharpe']:.2f}  |  Sortino：{stats['sortino']:.2f}\n"
         f"{yr3}\n{yr5}\n{yr10}\n"
+        f"\n"
+        f"💎 加價機制：策略 YTD 每升 10%，下一季訂閱費上調\n"
+        f"🔒 現有會員鎖定現價，永不受加價影響 — 愈早加入愈抵\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
         f"@FRM ETF Premium · FerryRichMan Limited\n"
         f"🌐 ferryrichman.com\n"
@@ -970,7 +973,7 @@ function cp() {{
 </script>
 </body></html>
         """,
-        height=760, scrolling=False,
+        height=850, scrolling=False,
     )
 
 

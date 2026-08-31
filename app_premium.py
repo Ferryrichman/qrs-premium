@@ -532,6 +532,7 @@ def get_current_info(prices: pd.DataFrame) -> dict:
         "mtd_ret": mtd_ret,
         "scores": scores,
         "data_date": cur_row,
+        "last_daily": getattr(prices, "attrs", {}).get("last_daily_date", ""),
         "now": now,
     }
 
@@ -874,6 +875,21 @@ def render_whatsapp_section(info: dict, stats: dict):
     lev1 = " (2x)" if h1 != raw1 else ""
     lev2 = " (2x)" if h2 != raw2 else ""
 
+    # Date ranges for each figure
+    data_dt = info["data_date"]          # month-end of last completed month
+    prev_range = f"{data_dt.month}月1日–{data_dt.month}月{data_dt.day}日"
+    ytd_range  = f"1月1日–{data_dt.month}月{data_dt.day}日"
+    mtd_range  = ""
+    last_daily = info.get("last_daily", "")
+    if mtd_ret is not None and last_daily:
+        try:
+            ld = datetime.strptime(last_daily, "%Y-%m-%d")
+            if ld.month == now.month:
+                mtd_range = f"{now.month}月1日–{ld.month}月{ld.day}日"
+        except Exception:
+            pass
+    mtd_label = f"本月MTD（{mtd_range}）" if mtd_range else "本月MTD"
+
     if changed:
         ch1 = "" if h1 == prev_h1 else f"  #1: {prev_h1} → {h1}\n"
         ch2 = "" if h2 == prev_h2 else f"  #2: {prev_h2} → {h2}\n"
@@ -897,9 +913,9 @@ def render_whatsapp_section(info: dict, stats: dict):
         f"🥈 #2 副倉 (40%): {h2}{lev2}\n"
         f"\n"
         f"{change_line}\n"
-        f"📈 上月策略回報：{ret_str}\n"
-        f"📊 本月MTD：{mtd_str}\n"
-        f"📅 YTD：{ytd_str}\n"
+        f"📈 上月策略回報（{prev_range}）：{ret_str}\n"
+        f"📊 {mtd_label}：{mtd_str}\n"
+        f"📅 YTD（{ytd_range}）：{ytd_str}\n"
         f"\n"
         f"📅 執行時間：本月第一個交易日，開市價買入\n"
         f"⏰ 執行 60% / 40% 嘅資金分配\n"

@@ -343,11 +343,13 @@ def load_prices(date_key: str = "") -> pd.DataFrame:
     close_frames = {}
     open_frames = {}
 
+    last_dates = []
     for t in ALL_TICKERS:
         daily = _get_daily_ohlc(t, start, end)
         if daily.empty or daily["Close"].dropna().empty:
             st.error(f"⚠️ 無法從 Yahoo Finance 下載 **{t}** 數據（已重試 3 次）。\n\nYahoo 限流，請等 1-2 分鐘後 F5。")
             st.stop()
+        last_dates.append(daily["Close"].dropna().index[-1])
         close_frames[t] = daily["Close"].resample("ME").last()
         open_frames[t] = daily["Open"].resample("ME").first()
 
@@ -358,7 +360,37 @@ def load_prices(date_key: str = "") -> pd.DataFrame:
 
     for t in ALL_TICKERS:
         df[f"{t}_open"] = open_frames[t].reindex(df.index)
+
+    # Oldest last-bar across tickers — used by the completeness guard
+    df.attrs["last_daily_date"] = min(last_dates).strftime("%Y-%m-%d") if last_dates else ""
     return df
+
+
+def _prev_month_data_incomplete(last_daily_str: str) -> bool:
+    """True if the just-completed month looks like it's missing its final
+    trading day(s) — i.e. the next weekday after our last daily bar still
+    falls inside the completed month. Yahoo can lag the final session by a
+    few hours after HKT 07:00 cache rollover; computing the new month's
+    signal without that bar risks a wrong pick when scores are close."""
+    if not last_daily_str:
+        return False
+    try:
+        last_daily = datetime.strptime(last_daily_str, "%Y-%m-%d")
+        now_hk = datetime.now(_HK_TZ).replace(tzinfo=None)
+        prev_month_end = (now_hk.replace(day=1) - timedelta(days=1)).date()
+        if last_daily.date() >= prev_month_end:
+            return False
+        d = last_daily + timedelta(days=1)
+        while d.weekday() >= 5:
+            d += timedelta(days=1)
+        # Memorial Day (last Monday of May) is a US holiday, not missing data
+        if d.month == 5 and d.weekday() == 0 and d.day >= 25:
+            d += timedelta(days=1)
+            while d.weekday() >= 5:
+                d += timedelta(days=1)
+        return d.date() <= prev_month_end
+    except Exception:
+        return False
 
 
 @st.cache_data(show_spinner=False)
@@ -1732,6 +1764,18 @@ def main():
 
     with st.spinner("正在獲取最新市場數據..."):
         prices = load_prices(date_key=_hk_date_key())
+
+        # Completeness guard: if the just-completed month is missing its final
+        # trading day (Yahoo ingest lag), warn AND drop the cache so the next
+        # reload refetches instead of serving the incomplete data all day.
+        _last_daily = getattr(prices, "attrs", {}).get("last_daily_date", "")
+        if _prev_month_data_incomplete(_last_daily):
+            st.warning(
+                f"⚠️ 數據源尚未更新上月最後交易日（目前數據截至 {_last_daily}）。"
+                "本月訊號待數據更新後最終確認 — 請 15-30 分鐘後重新整理頁面（F5）。"
+            )
+            load_prices.clear()
+
         prices = compute_signals(prices)
 
     info = get_current_info(prices)

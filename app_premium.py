@@ -333,8 +333,11 @@ def _get_daily_ohlc(t: str, start, end) -> pd.DataFrame:
 @st.cache_data(show_spinner=False)
 def load_prices(date_key: str = "") -> pd.DataFrame:
     """Download daily adj OHLC for all 8 tickers, build monthly panel."""
-    _CACHE_VERSION = "premium_v1"
-    end = datetime.today()
+    _CACHE_VERSION = "premium_v2"
+    # HKT date + 1 day: yfinance `end` is EXCLUSIVE, and the server runs UTC
+    # (8h behind HK) — using bare datetime.today() drops the latest completed
+    # US session during the HKT 07:00-08:00 window after cache rollover.
+    end = datetime.now(_HK_TZ).replace(tzinfo=None) + timedelta(days=1)
     start = end - relativedelta(years=22)
 
     close_frames = {}
@@ -505,7 +508,9 @@ def get_current_info(prices: pd.DataFrame) -> dict:
 def _get_mtd_return(h1: str, h2: str, date_key: str = ""):
     """MTD return using daily prices for current holdings (60/40 weighted)."""
     try:
-        today = datetime.today()
+        # HKT, not server UTC — keeps the month filter aligned with the
+        # signal month shown in the UI (server is 8h behind HK)
+        today = datetime.now(_HK_TZ).replace(tzinfo=None)
         month_start = today.replace(day=1) - timedelta(days=1)
         for ticker, weight in [(h1, WEIGHT1), (h2, WEIGHT2)]:
             daily = _get_daily_ohlc(ticker, month_start, today + timedelta(days=1))

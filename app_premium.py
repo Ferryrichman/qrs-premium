@@ -527,7 +527,10 @@ def get_current_info(prices: pd.DataFrame) -> dict:
     prev_h2 = prices.loc[prev_row, "held_2"]
     last_ret = prices.loc[cur_row, "signal_return"]
 
-    # Fallback: if next month's open isn't available yet, use close/open for the month
+    # Fallback: if next month's open isn't available yet, use close/open for
+    # the month. Marked provisional — the official open-to-open figure
+    # replaces it automatically once the new month's first open exists.
+    last_ret_prov = False
     if pd.isna(last_ret):
         try:
             r1 = r2 = np.nan
@@ -542,6 +545,7 @@ def get_current_info(prices: pd.DataFrame) -> dict:
                         r2 = val
             if pd.notna(r1) and pd.notna(r2):
                 last_ret = WEIGHT1 * r1 + WEIGHT2 * r2
+                last_ret_prov = True
         except Exception:
             pass
 
@@ -566,6 +570,7 @@ def get_current_info(prices: pd.DataFrame) -> dict:
         "prev_1": prev_h1, "prev_2": prev_h2,
         "changed": (cur_h1 != prev_h1) or (cur_h2 != prev_h2),
         "last_ret": float(last_ret) if pd.notna(last_ret) else None,
+        "last_ret_prov": last_ret_prov,
         "ytd_ret": ytd_ret,
         "mtd_ret": mtd_ret,
         "scores": scores,
@@ -762,12 +767,13 @@ def render_dual_signal_card(info: dict):
                        f'border-radius:100px;font-size:12px;font-weight:700;">✅ 維持持倉</span>')
 
     badge_style = 'padding:6px 14px;border-radius:100px;font-size:12px;font-weight:700;'
+    prov_tag = "(暫定)" if info.get("last_ret_prov") else ""
     if last_ret is not None:
         pct = f"{last_ret*100:+.2f}%"
         r_clr = "#4ade80" if last_ret >= 0 else "#f87171"
         r_bg = "#052e16" if last_ret >= 0 else "#450a0a"
         ret_html = (f'<span style="background:{r_bg};color:{r_clr};{badge_style}">'
-                    f'{"↑" if last_ret >= 0 else "↓"} 上月回報 {pct}</span>')
+                    f'{"↑" if last_ret >= 0 else "↓"} 上月回報{prov_tag} {pct}</span>')
     else:
         ret_html = ""
 
@@ -910,6 +916,8 @@ def render_whatsapp_section(info: dict, stats: dict):
 
     month_str = f"{now.month}月{now.year}"
     ret_str = f"{last_ret*100:.2f}%" if last_ret is not None else "N/A"
+    if last_ret is not None and info.get("last_ret_prov"):
+        ret_str += "（暫定，開市後更新）"
     mtd_str = f"{mtd_ret*100:+.2f}%" if mtd_ret is not None else "N/A"
     ytd_str = f"{ytd_ret*100:+.2f}%" if ytd_ret is not None else "N/A"
     lev1 = " (2x)" if h1 != raw1 else ""

@@ -637,6 +637,10 @@ def calc_stats(prices: pd.DataFrame) -> dict:
     cum_all_norm = (1 + monthly_all).cumprod()
     dd_series_all = (cum_all_norm - cum_all_norm.cummax()) / cum_all_norm.cummax() * 100
 
+    # SPY buy-and-hold drawdown series (same months) — the risk story
+    spy_cum_norm = (1 + spy_ret_all.fillna(0)).cumprod()
+    spy_dd_series = (spy_cum_norm - spy_cum_norm.cummax()) / spy_cum_norm.cummax() * 100
+
     max_dd_months = 0
     cur_run = 0
     for v in (drawdown < 0):
@@ -670,6 +674,7 @@ def calc_stats(prices: pd.DataFrame) -> dict:
     cum_all = _anchor(cum_all, 10000.0)
     spy_cum_all = _anchor(spy_cum_all, 10000.0)
     dd_series_all = _anchor(dd_series_all, 0.0)
+    spy_dd_series = _anchor(spy_dd_series, 0.0)
 
     # Win rate
     pos_months = (monthly > 0).sum()
@@ -690,6 +695,7 @@ def calc_stats(prices: pd.DataFrame) -> dict:
         "cumulative": cum_all,
         "spy_cumulative": spy_cum_all,
         "drawdown_series": dd_series_all,
+        "spy_drawdown_series": spy_dd_series,
         "max_dd_months": max_dd_months,
         "sharpe": sharpe,
         "sortino": sortino,
@@ -1292,22 +1298,36 @@ def render_drawdown_chart(stats: dict):
     if dd is None or dd.empty:
         return
     mdd_val = stats.get("mdd", 0) * 100
+    spy_dd = stats.get("spy_drawdown_series")
     fig = go.Figure()
+    # SPY B&H drawdown (behind, grey dashed) — the comparison baseline
+    if spy_dd is not None and not spy_dd.empty:
+        spy_mdd = float(spy_dd.min())
+        fig.add_trace(go.Scatter(
+            x=spy_dd.index, y=spy_dd.values, mode="lines",
+            line=dict(color="#64748b", width=1.2, dash="dot"),
+            name="SPY 買入持有回撤",
+            hovertemplate="%{x|%Y-%m}  SPY <b>%{y:.1f}%</b><extra></extra>"))
+        fig.add_hline(y=spy_mdd, line=dict(color="#64748b", width=1, dash="dot"),
+                      annotation_text=f"SPY MDD {spy_mdd:.1f}%", annotation_position="bottom left",
+                      annotation_font=dict(color="#64748b", size=10))
     fig.add_trace(go.Scatter(
         x=dd.index, y=dd.values, mode="lines", fill="tozeroy",
         line=dict(color="#f87171", width=1.2),
-        fillcolor="rgba(248,113,113,0.15)", name="回撤",
-        hovertemplate="%{x|%Y-%m}  <b>%{y:.1f}%</b><extra></extra>"))
+        fillcolor="rgba(248,113,113,0.15)", name="FRM 策略回撤",
+        hovertemplate="%{x|%Y-%m}  FRM <b>%{y:.1f}%</b><extra></extra>"))
     fig.add_hline(y=mdd_val, line=dict(color="#f87171", width=1, dash="dot"),
-                  annotation_text=f"MDD {mdd_val:.1f}%", annotation_position="bottom right",
+                  annotation_text=f"FRM MDD {mdd_val:.1f}%", annotation_position="bottom right",
                   annotation_font=dict(color="#f87171", size=10))
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        height=150, margin=dict(l=0, r=0, t=4, b=0),
+        height=230, margin=dict(l=0, r=0, t=4, b=0),
         xaxis=dict(showgrid=False, tickfont=dict(color="#64748b", size=10)),
         yaxis=dict(showgrid=True, gridcolor="#1e293b", zeroline=True, zerolinecolor="#334155",
                    tickfont=dict(color="#64748b", size=9), ticksuffix="%", autorange="reversed"),
-        hovermode="x unified", showlegend=False,
+        hovermode="x unified", showlegend=True,
+        legend=dict(orientation="h", yanchor="top", y=1.18, x=0,
+                    font=dict(color="#94a3b8", size=11), bgcolor="rgba(0,0,0,0)"),
     )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 

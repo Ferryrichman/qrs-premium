@@ -990,6 +990,11 @@ def render_whatsapp_section(info: dict, stats: dict):
     bt_end = stats["backtest_end"].year if stats.get("backtest_end") is not None else "—"
     bt_period = f"（{bt_start}-{bt_end}）"
 
+    sharpe_v = stats.get("sharpe")
+    sortino_v = stats.get("sortino")
+    sharpe_str = f"{sharpe_v:.2f}" if sharpe_v is not None else "—"
+    sortino_str = f"{sortino_v:.2f}" if sortino_v is not None else "—"
+
     c3 = stats.get("cagr_3yr"); c5 = stats.get("cagr_5yr"); c10 = stats.get("cagr_10yr")
     yr3 = f"3年年化：{c3*100:.1f}%" if c3 is not None else "3年年化：數據不足"
     yr5 = f"5年年化：{c5*100:.1f}%" if c5 is not None else "5年年化：數據不足"
@@ -1010,7 +1015,7 @@ def render_whatsapp_section(info: dict, stats: dict):
         f"⏰ 執行 60% / 40% 嘅資金分配\n"
         f"\n"
         f"回測 CAGR：{stats['cagr']*100:.1f}% {bt_period}  |  MDD：{stats['mdd']*100:.1f}%\n"
-        f"Sharpe：{stats['sharpe']:.2f}  |  Sortino：{stats['sortino']:.2f}\n"
+        f"Sharpe：{sharpe_str}  |  Sortino：{sortino_str}\n"
         f"{yr3}\n{yr5}\n{yr10}\n"
         f"\n"
         f"💎 加價機制：策略 YTD 每升 10%，下一季訂閱費上調\n"

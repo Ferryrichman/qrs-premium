@@ -769,6 +769,9 @@ def render_dual_signal_card(info: dict):
 
     month_str = f"{now.year}年{MONTH_CN[now.month-1]}月"
     data_str = data_dt.strftime("%Y-%m-%d")
+    # Completeness guard fired → last month's final close missing → provisional
+    sig_prov_html = ('<span style="color:#fbbf24;">（暫定）</span>'
+                     if info.get("signal_prov") else "")
 
     info1 = ETF_INFO[h1]; info2 = ETF_INFO[h2]
     lev1 = "⚡ 2x" if h1 != raw1 else ""
@@ -832,7 +835,13 @@ def render_dual_signal_card(info: dict):
         mtd_upd = f"MTD／持倉表現：更新至 {mtd_end.month}月{mtd_end.day}日 收市"
     else:
         mtd_upd = "MTD／持倉表現：本月暫未有收市數據"
-    date_line = f"訊號計算：{data_str} 月底收市價<br>{mtd_upd}"
+    if info.get("signal_prov") and info.get("last_daily"):
+        # month-end label is 9/30-style even when the final bar is missing —
+        # say which close was actually used
+        date_line = (f"訊號計算：暫用 {info['last_daily']} 收市價（上月最後交易日數據未到）"
+                     f"<br>{mtd_upd}")
+    else:
+        date_line = f"訊號計算：{data_str} 月底收市價<br>{mtd_upd}"
 
     components.html(
         f"""
@@ -866,7 +875,7 @@ body {{ background:transparent; padding:0; margin:0; }}
   <div class="glow"></div>
   <div class="top-row">
     <div>
-      <div class="label">{month_str} 訊號 · STRATEGY C</div>
+      <div class="label">{month_str} 訊號{sig_prov_html} · STRATEGY C</div>
       <div class="date">{date_line}</div>
     </div>
     <div class="badges">{change_html}{ret_html}{mtd_html}{ytd_html}</div>
@@ -1001,7 +1010,8 @@ def render_whatsapp_section(info: dict, stats: dict):
     yr10 = f"10年年化：{c10*100:.1f}%" if c10 is not None else "10年年化：數據不足"
 
     msg = (
-        f"📊【FRM ETF Premium Signal】{month_str}\n"
+        f"📊【FRM ETF Premium Signal】{month_str}"
+        f"{'（暫定，待上月收市數據更新後確認）' if info.get('signal_prov') else ''}\n"
         f"\n"
         f"🥇 #1 主倉 (60%): {h1}{lev1}\n"
         f"🥈 #2 副倉 (40%): {h2}{lev2}\n"
@@ -2086,20 +2096,34 @@ def main():
         # reload refetches instead of serving the incomplete data all day.
         # Throttled to one clear per 10 min so a guard misfire cannot turn
         # every page load into a full 8-ticker refetch (Yahoo rate limits).
+        #
+        # Before HKT 07:00 the guard ALWAYS fires on the 1st (the final bar is
+        # deliberately excluded by _final_bar_cutoff until the 07:00 cache-key
+        # roll), so clearing the cache then only causes pointless 8-ticker
+        # refetches — show the notice but keep the cache.
         _last_daily = getattr(prices, "attrs", {}).get("last_daily_date", "")
-        if _prev_month_data_incomplete(_last_daily):
-            st.warning(
-                f"⚠️ 數據源尚未更新上月最後交易日（目前數據截至 {_last_daily}）。"
-                "本月訊號待數據更新後最終確認 — 請 15-30 分鐘後重新整理頁面（F5）。"
-            )
-            _now_ts = time.time()
-            if _now_ts - _GUARD_CLEAR_STATE.get("t", 0.0) > 600:
-                load_prices.clear()
-                _GUARD_CLEAR_STATE["t"] = _now_ts
+        _signal_provisional = _prev_month_data_incomplete(_last_daily)
+        if _signal_provisional:
+            if datetime.now(_HK_TZ).hour < 7:
+                st.warning(
+                    f"⚠️ 上月最後交易日嘅收市數據未齊（目前數據截至 {_last_daily}）。"
+                    "本月訊號屬「暫定」，以香港時間 07:00 後數據更新為準 — 請 07:00 後重新整理頁面（F5）。"
+                )
+            else:
+                st.warning(
+                    f"⚠️ 數據源尚未更新上月最後交易日（目前數據截至 {_last_daily}）。"
+                    "本月訊號屬「暫定」，待數據更新後最終確認 — 請稍後重新整理頁面（F5）。"
+                )
+                _now_ts = time.time()
+                if _now_ts - _GUARD_CLEAR_STATE.get("t", 0.0) > 600:
+                    load_prices.clear()
+                    _GUARD_CLEAR_STATE["t"] = _now_ts
 
         prices = compute_signals(prices)
 
     info = get_current_info(prices)
+    if info:
+        info["signal_prov"] = _signal_provisional
     stats = calc_stats(prices)
     annual = calc_annual(prices)
 

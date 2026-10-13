@@ -561,8 +561,8 @@ def get_current_info(prices: pd.DataFrame) -> dict:
     ytd_ret = float((1 + ytd_months).prod() - 1) if len(ytd_months) > 0 else None
 
     # MTD return — daily data for current month's holdings
-    mtd_ret = _get_mtd_return(cur_h1, cur_h2, _hk_date_key(),
-                              datetime.now(_HK_TZ).strftime("%Y-%m"))
+    mtd_ret, mtd_start, mtd_end = _get_mtd_return(cur_h1, cur_h2, _hk_date_key(),
+                                                  datetime.now(_HK_TZ).strftime("%Y-%m"))
 
     return {
         "current_1": cur_h1, "current_2": cur_h2,
@@ -573,6 +573,8 @@ def get_current_info(prices: pd.DataFrame) -> dict:
         "last_ret_prov": last_ret_prov,
         "ytd_ret": ytd_ret,
         "mtd_ret": mtd_ret,
+        "mtd_start": mtd_start,   # first session date used for MTD (Adj Open)
+        "mtd_end": mtd_end,       # last session date used for MTD (Adj Close)
         "scores": scores,
         "data_date": cur_row,
         "last_daily": getattr(prices, "attrs", {}).get("last_daily_date", ""),
@@ -584,6 +586,11 @@ def get_current_info(prices: pd.DataFrame) -> dict:
 def _get_mtd_return(h1: str, h2: str, date_key: str = "", month_key: str = ""):
     """MTD return using daily prices for current holdings (60/40 weighted).
 
+    Returns (mtd, start_date, end_date): start_date = first session whose
+    Adj Open is used, end_date = last session whose Adj Close is used (the
+    earlier of the two holdings if they differ). (None, None, None) if
+    unavailable.
+
     month_key (HKT %Y-%m) is part of the cache key so a value cached late
     on the last day of a month can never be served as the NEW month's MTD
     during the HKT 00:00-07:00 window before date_key rolls."""
@@ -594,19 +601,22 @@ def _get_mtd_return(h1: str, h2: str, date_key: str = "", month_key: str = ""):
         month_start = today.replace(day=1) - timedelta(days=1)
         cutoff = _final_bar_cutoff()
         mtd = 0.0
+        starts, ends = [], []
         for ticker, weight in [(h1, WEIGHT1), (h2, WEIGHT2)]:
             daily = _get_daily_ohlc(ticker, month_start, today + timedelta(days=1))
             daily = daily[(daily.index.month == today.month) & (daily.index.date < cutoff)]
             if daily.empty:
-                return None
+                return None, None, None
             first_open = float(daily["Open"].iloc[0])
             last_close = float(daily["Close"].iloc[-1])
             if pd.isna(first_open) or pd.isna(last_close) or first_open == 0:
-                return None
+                return None, None, None
             mtd += weight * (last_close / first_open - 1)
-        return mtd
+            starts.append(daily.index[0])
+            ends.append(daily.index[-1])
+        return mtd, max(starts), min(ends)
     except Exception:
-        return None
+        return None, None, None
 
 
 def calc_stats(prices: pd.DataFrame) -> dict:
@@ -794,14 +804,29 @@ def render_dual_signal_card(info: dict):
         ytd_html = ""
 
     mtd_ret = info.get("mtd_ret")
+    mtd_start = info.get("mtd_start")
+    mtd_end = info.get("mtd_end")
     if mtd_ret is not None:
         mtd_pct = f"{mtd_ret*100:+.1f}%"
         m_clr = "#4ade80" if mtd_ret >= 0 else "#f87171"
         m_bg = "#052e16" if mtd_ret >= 0 else "#450a0a"
+        mtd_span = ""
+        if mtd_start is not None and mtd_end is not None:
+            mtd_span = (f"（{mtd_start.month}/{mtd_start.day} 開市價→"
+                        f"{mtd_end.month}/{mtd_end.day} 收市價）")
         mtd_html = (f'<span style="background:{m_bg};color:{m_clr};{badge_style}">'
-                    f'📊 MTD {mtd_pct}</span>')
+                    f'📊 MTD {mtd_pct}{mtd_span}</span>')
     else:
         mtd_html = ""
+
+    # Two different time anchors — keep them visibly separate:
+    #   signal  = last completed month-end close
+    #   MTD     = latest final daily close this month
+    if mtd_end is not None:
+        mtd_upd = f"MTD／持倉表現：更新至 {mtd_end.month}月{mtd_end.day}日 收市"
+    else:
+        mtd_upd = "MTD／持倉表現：本月暫未有收市數據"
+    date_line = f"訊號計算：{data_str} 月底收市價<br>{mtd_upd}"
 
     components.html(
         f"""
@@ -818,7 +843,7 @@ body {{ background:transparent; padding:0; margin:0; }}
 .top-row {{ display:flex; justify-content:space-between; align-items:flex-start;
     flex-wrap:wrap; gap:8px; margin-bottom:18px; }}
 .label {{ font-size:11px; color:#64748b; font-weight:800; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px; }}
-.date  {{ font-size:11px; color:#475569; }}
+.date  {{ font-size:11px; color:#475569; line-height:1.5; }}
 .badges {{ display:grid; grid-template-columns:auto auto; gap:5px; justify-items:end; }}
 .holdings {{ display:flex; gap:14px; align-items:stretch; }}
 .holding {{ flex: 1; padding: 14px; border-radius: 14px; border: 1.5px solid; }}
@@ -836,7 +861,7 @@ body {{ background:transparent; padding:0; margin:0; }}
   <div class="top-row">
     <div>
       <div class="label">{month_str} 訊號 · STRATEGY C</div>
-      <div class="date">數據截至 {data_str}</div>
+      <div class="date">{date_line}</div>
     </div>
     <div class="badges">{change_html}{ret_html}{mtd_html}{ytd_html}</div>
   </div>
@@ -857,7 +882,7 @@ body {{ background:transparent; padding:0; margin:0; }}
 </div>
 </body></html>
         """,
-        height=300, scrolling=False,
+        height=320, scrolling=False,
     )
 
 

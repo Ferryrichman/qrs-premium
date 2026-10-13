@@ -693,9 +693,13 @@ def calc_stats(prices: pd.DataFrame) -> dict:
     neg_months = (monthly < 0).sum()
     win_rate = pos_months / (pos_months + neg_months) if (pos_months + neg_months) > 0 else 0
 
-    # Turnover (sum of changes in held_1 + held_2)
-    chg = ((prices["held_1"] != prices["held_1"].shift(1)).sum()
-           + (prices["held_2"] != prices["held_2"].shift(1)).sum())
+    # Turnover (sum of changes in held_1 + held_2). Only compare rows that
+    # actually have a signal: NaN != NaN is True in pandas, so the pre-signal
+    # months (before the first 12M score) used to be counted as a "change"
+    # every month and inflated trades/yr.
+    held = prices[["held_1", "held_2"]].dropna()
+    chg = int(((held["held_1"] != held["held_1"].shift(1)).iloc[1:].sum()
+               + (held["held_2"] != held["held_2"].shift(1)).iloc[1:].sum()))
 
     return {
         "cagr": cagr, "mdd": mdd, "mdd_start": mdd_start, "mdd_end": mdd_end,
@@ -1531,10 +1535,12 @@ def render_validation_section():
     )
 
 
-def render_warnings_section():
-    """Critical risk warnings — must be acknowledged."""
+def render_warnings_section(trades_yr=None):
+    """Critical risk warnings — must be acknowledged.
+    trades_yr: same computed value as the KPI tile (calc_stats)."""
+    trades_txt = f"~{trades_yr:.0f}" if trades_yr is not None else "（見上方 KPI）"
     st.markdown(
-        """
+        f"""
 <div style="background:linear-gradient(135deg, #2a1010, #1a0a0a); border:1.5px solid #7f1d1d;
     border-radius:14px; padding:20px 24px; margin-top:18px;">
   <div style="font-size:11px;color:#f87171;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">
@@ -1545,7 +1551,7 @@ def render_warnings_section():
     <li><b style="color:#f87171;">Max Drawdown 預期 -28% 至 -35%</b>：歷史係 -27.9%，未來最差可能 -40%（包 AI burst worst case）</li>
     <li><b style="color:#f87171;">心理承受要強</b>：當你 hold QLD 一個月蝕 -15%，唔可以 panic sell — 月底 momentum 會自動 rotate</li>
     <li><b style="color:#fbbf24;">2x ETF 杠杆衰變</b>：choppy 市場 SSO/QLD 會 underperform 2x 期望（每年約 -1% to -3%）</li>
-    <li><b style="color:#fbbf24;">月度 turnover ~13 trades/yr</b>：HK 投資者 commission ~$130/yr / US 散戶有 short-term capital gains</li>
+    <li><b style="color:#fbbf24;">月度 turnover {trades_txt} trades/yr</b>：HK 投資者 commission ~$130/yr / US 散戶有 short-term capital gains</li>
     <li><b style="color:#fbbf24;">執行紀律</b>：必須月底準時 review，月初準時執行；錯過一次 signal 可能影響全年回報</li>
     <li><b style="color:#94a3b8;">Backtest 限制</b>：17 年數據未包 2000-2007 dotcom bust，未經完整 secular bear market 驗證</li>
     <li><b style="color:#94a3b8;">Slippage 假設為零</b>：實際執行 SSO/QLD spread ~0.05-0.20%，大手會有 impact cost</li>
@@ -2136,7 +2142,7 @@ def main():
 
     # Risk warnings
     section_header("⚠️", "風險警告 · Risk Warnings")
-    render_warnings_section()
+    render_warnings_section(stats.get("trades_yr"))
     render_supplementary_disclosure("validation_premium.json")
 
     # Methodology — Owner-only (proprietary spec)

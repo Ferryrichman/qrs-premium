@@ -5,7 +5,8 @@ FerryRichMan Limited
 Streamlit App — Top-2 Weighted Momentum ETF Signal with Conditional Leverage
 ──────────────────────────────────────────────────────────────────────────────
 
-CORE LOGIC (Strategy C, validated as Pareto-optimal vs Combo B / D):
+CORE LOGIC (Strategy C, chosen over Combo B / D — a risk/return trade-off,
+not a Pareto-dominant result):
   - Universe: SPY, QQQ, VEU, GLD, TLT, BIL  (6 unleveraged base ETFs)
   - Leverage twins: SPY -> SSO (2x),  QQQ -> QLD (2x)
   - Per-ETF leverage threshold: SPY 0.05, QQQ 0.08
@@ -15,12 +16,13 @@ CORE LOGIC (Strategy C, validated as Pareto-optimal vs Combo B / D):
   - Execute on first trading day of next month at Adj Open
 
 PROVEN-OPTIMAL DESIGN CHOICES (do not modify):
-  - 60/40 Top-2 weighting (vs 50/50): +0.6pp CAGR, free improvement
+  - 60/40 Top-2 weighting (vs 50/50): ~+0.4pp CAGR but ~2.6pp deeper MDD
+    (-27.9% vs -25.3%; 2026-10 internal re-run) — a trade-off, not free
   - QQQ threshold 0.08 (vs 0.05): -3pp MDD, +0.02 Sharpe
   - No 200MA filter:        ❌ tested, hurts in V-recoveries
   - No AM Guard:            ❌ tested, hurts post-crash recovery
   - No DDCB circuit breaker: ❌ tested, whipsaw destroys returns
-  - No 3x leverage:          ❌ tail risk too high, dotcom 2000-02 -85%
+  - No 3x leverage:          ❌ tail risk too high, dotcom 2000-02 -85% (simulated)
   - No SOXX:                 ❌ AI-burst stress shows 8pp deeper drawdown vs C
 """
 
@@ -1459,10 +1461,10 @@ def render_validation_section():
   </p>
 
   <div style="font-size:12px;color:#cbd5e1;font-weight:700;margin-top:10px;margin-bottom:6px;">
-    ✅ 證實有效嘅設計選擇
+    ✅ 回測入面採用嘅設計選擇
   </div>
   <ul style="font-size:12px;color:#94a3b8;line-height:1.8;padding-left:20px;margin-bottom:14px;">
-    <li><b>Top-2 60/40 weighted</b>：vs 50/50 提升 +0.6pp CAGR、Sharpe +0.01（Pareto win）</li>
+    <li><b>Top-2 60/40 weighted</b>：vs 50/50 屬取捨 — CAGR 略高（約 +0.4pp），但最大回撤較深（約 −27.9% vs −25.3%），Sharpe 相若；分段比較互有勝負（2026-10 內部重算）</li>
     <li><b>QQQ threshold 0.08（vs SPY 0.05）</b>：救 -3pp MDD、Sharpe +0.02 — QQQ 高 vol，門檻應該高啲</li>
     <li><b>Conditional leverage @ 0.05</b>：相對「always leveraged」Sharpe 升 0.07、MDD 細 4pp</li>
     <li><b>Score = 0.8×3M + 0.2×12M</b>：286 weight combinations grid search 第 95 百分位，鄰域穩定</li>
@@ -1477,7 +1479,7 @@ def render_validation_section():
     <li><b>AM Guard</b>（12M&lt;0 → BIL）：2009-06 失去 VEU +12% 反彈</li>
     <li><b>DDCB 回撤熔斷</b>：whipsaw 損失，CAGR 由 14.5% 跌到 5%</li>
     <li><b>Walk-forward weight 優化</b>：固定 weights Sharpe 0.93 vs 重新優化 0.57</li>
-    <li><b>3x 杠杆 ETF</b>：dotcom 2000-02 SOXL 跌 -98%</li>
+    <li><b>3x 杠杆 ETF</b>：dotcom 2000-02 SOXL 跌 -98%（模擬數據 — SOXL 2010 年先上市）</li>
     <li><b>SOXX 加入 universe</b>：AI burst stress 多蝕 5-9pp</li>
   </ul>
 
@@ -1512,13 +1514,17 @@ def render_validation_section():
       <th style="padding:6px;text-align:right;color:#cbd5e1;">Sharpe</th>
     </tr></thead>
     <tbody>
-      <tr><td style="padding:6px;">SPY Buy & Hold</td><td style="padding:6px;text-align:right;">11.1%</td><td style="padding:6px;text-align:right;color:#f87171;">-47.2%</td><td style="padding:6px;text-align:right;">0.73</td></tr>
+      <tr><td style="padding:6px;">SPY Buy & Hold</td><td style="padding:6px;text-align:right;">11.1%</td><td style="padding:6px;text-align:right;color:#f87171;">-47.2%*</td><td style="padding:6px;text-align:right;">0.73</td></tr>
       <tr style="background:#0a0f1e;"><td style="padding:6px;">FRM Standard (SPY/VEU/BIL)</td><td style="padding:6px;text-align:right;">9.7%</td><td style="padding:6px;text-align:right;">-15.9%</td><td style="padding:6px;text-align:right;">0.86</td></tr>
       <tr><td style="padding:6px;">QRSA-25% (4 modules)</td><td style="padding:6px;text-align:right;">10.5%</td><td style="padding:6px;text-align:right;">-31.0%</td><td style="padding:6px;text-align:right;">0.63</td></tr>
       <tr style="background:#1e1b1a;"><td style="padding:6px;color:#fbbf24;"><b>FRM Premium (Strategy C) ⭐</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>15.0%</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>-27.9%</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>0.80</b></td></tr>
       <tr><td style="padding:6px;">Combo B (+ SOXX)</td><td style="padding:6px;text-align:right;">18.4%</td><td style="padding:6px;text-align:right;">-30.8%</td><td style="padding:6px;text-align:right;">0.91</td></tr>
     </tbody>
   </table>
+  <p style="font-size:10px;color:#64748b;line-height:1.6;margin-top:8px;">
+    * SPY -47.2% 係 2008–2026 全期按月計（開市價對開市價）嘅最大回撤；日線峰谷約 −55%。
+    FRM Standard 由 2008-06 起計，其餘由 2008-01 起計，比較窗口略有不同。
+  </p>
 </div>
         """,
         unsafe_allow_html=True,

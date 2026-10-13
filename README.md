@@ -32,7 +32,7 @@
 ```bash
 # In Downloads folder (or move files to a clean folder first)
 git init
-git add app_premium.py requirements.txt .gitignore .streamlit/secrets.toml.example README_PREMIUM.md
+git add app_premium.py academic_validation_ui.py validation_premium.json requirements.txt .gitignore .streamlit/secrets.toml.example README.md
 git commit -m "Initial Premium app"
 
 # Create new GitHub repo (e.g., qrs-premium), then:
@@ -128,7 +128,8 @@ pip install -r requirements.txt
 
 # Copy secrets template
 cp .streamlit/secrets.toml.example .streamlit/secrets.toml
-# Edit .streamlit/secrets.toml and set your password
+# Edit .streamlit/secrets.toml and set FRM_SUB_SECRET to the same value as the
+# POPI backend (needed to verify HMAC unlock tokens). Never commit this file.
 
 # Run locally
 streamlit run app_premium.py
@@ -142,13 +143,15 @@ Visit [http://localhost:8501](http://localhost:8501)
 
 ```
 .
-├── app_premium.py              # Main Streamlit app (Strategy C logic + UI)
+├── app_premium.py              # Main Streamlit app (Strategy C logic + UI + HMAC token gate)
+├── academic_validation_ui.py   # Renders the academic validation section
+├── validation_premium.json     # Pre-computed validation results
 ├── requirements.txt            # Python dependencies
 ├── .gitignore                  # Excludes secrets, __pycache__, etc.
 ├── .streamlit/
 │   ├── secrets.toml            # ⚠️ Local only, NEVER commit
 │   └── secrets.toml.example    # Template (safe to commit)
-└── README_PREMIUM.md           # This file
+└── README.md                   # This file
 ```
 
 ---
@@ -161,7 +164,7 @@ sophisticated investors who can tolerate:
 - **Single-month losses up to -20%** (historical worst)
 - **Drawdowns of -28% to -35%** (expected; could be -40% in tail event)
 - **2x leveraged ETF decay** in choppy markets
-- **Monthly turnover** ~14 trades/year (tax + commission impact)
+- **Monthly turnover** ~12 trades/year (tax + commission impact; live figure shown in-app)
 - **Strict execution discipline** required (missing one signal can hurt annual returns)
 
 **This is NOT a passive buy-and-hold strategy. Subscribers must commit to monthly review and execution.**
@@ -181,6 +184,6 @@ sophisticated investors who can tolerate:
 - **v1.0** (May 2026): Initial Premium release
   - Strategy C (Top-2 60/40 weighted, conditional leverage, per-ETF threshold)
   - Validation suite (walk-forward, GFC, AI burst stress tests)
-  - Password-protected access
+  - Subscriber access via HMAC-signed unlock tokens (`FRM_SUB_SECRET`, see Step 4) — no static password
 
 © FerryRichMan Limited. All rights reserved.

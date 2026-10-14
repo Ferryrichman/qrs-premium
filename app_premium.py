@@ -1604,9 +1604,9 @@ def render_supplementary_disclosure(json_path: str = "validation_premium.json"):
   </div>
   <ul style="font-size:12.5px;color:#cbd5e1;line-height:1.8;padding-left:20px;margin:0;">
     <li><b style="color:#fbbf24;">Sharpe 以無風險利率 0 計</b>：如改用 BIL（短期國庫券）做基準，Premium Sharpe 約 0.73</li>
-    <li><b style="color:#fbbf24;">未扣交易成本同稅</b>：回測未計佣金／差價，亦未計港人持美股股息 30% 預扣稅；估計每年回報再低約 1 個百分點（例如 CAGR 約 14.9% → 13.8%）</li>
+    <li><b style="color:#fbbf24;">未扣交易成本同稅</b>：回測未計佣金／差價，亦未計港人持美股股息 30% 預扣稅；估計每年回報再低約 1 個百分點（例如 CAGR 約 16.6% → 約 15.6%）</li>
     <li><b style="color:#fbbf24;">2x 槓桿 ETF</b>：回測用真實 SSO／QLD 價格，融資成本同管理費已隱含喺 ETF 淨值；作參考，2x ETF 實際回報通常比「2 倍指數回報」每年低約 1–2 個百分點</li>
-    <li><b style="color:#fbbf24;">訊號執行日敏感度</b>：同一規則如果改喺每月第 1–5 個交易日執行，CAGR 約 14.0%–15.4%、最大回撤約 −25% 至 −34%；放寬到第 1–10 日範圍更闊，最大回撤最差約 −42%。即係回測數字有一定「揀中日子」成分</li>
+    <li><b style="color:#fbbf24;">訊號執行日敏感度</b>：同一規則如果改喺每月第 1–5 個交易日執行，CAGR 約 13.8%–16.7%、最大回撤約 −30.0% 至 −36.3%（本頁採用第 1 個交易日，剛好係 5 個之中最高，所以實際執行結果可以明顯差過本頁數字）；放寬到第 1–10 日範圍更闊，CAGR 約 10.7%–16.7%、最大回撤最差約 −41.8%。即係回測數字有一定「揀中日子」成分</li>
     <li><b style="color:#fbbf24;">門檻邊界訊號</b>：當 SPY 分數貼近 0.05 門檻時，揸 SSO 定 SPY 對計算方式極敏感（例如用未經股息調整嘅價格計，結果可能唔同）</li>
     <li><b style="color:#94a3b8;">Deflated Sharpe {dsr_txt}</b>：考慮試過多個參數組合之後，回測 Sharpe 有一定機會係「試出嚟」</li>
     <li><b style="color:#94a3b8;">Momentum crash 風險</b>：動力策略喺市場急速反轉（例如大跌後急彈）時可能短期大幅落後</li>

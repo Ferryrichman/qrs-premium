@@ -1,11 +1,11 @@
 """
-FRM Premium ETF System — Strategy C
+FRM Premium ETF System
 FerryRichMan Limited
 ──────────────────────────────────────────────────────────────────────────────
 Streamlit App — Top-2 Weighted Momentum ETF Signal with Conditional Leverage
 ──────────────────────────────────────────────────────────────────────────────
 
-CORE LOGIC (Strategy C, chosen over Combo B / D — a risk/return trade-off,
+CORE LOGIC (chosen over Combo B / D — a risk/return trade-off,
 not a Pareto-dominant result):
   - Universe: SPY, QQQ, VEU, GLD, TLT, BIL  (6 unleveraged base ETFs)
   - Leverage twins: SPY -> SSO (2x),  QQQ -> QLD (2x)
@@ -90,7 +90,7 @@ def _skip_non_trading(d):
 
 
 # ══════════════════════════════════════════════════════════
-#  STRATEGY CONSTANTS  —  Strategy C
+#  STRATEGY CONSTANTS  —  FRM Premium
 # ══════════════════════════════════════════════════════════
 BASE_TICKERS = ["SPY", "QQQ", "VEU", "GLD", "TLT", "BIL"]
 LEVERAGE_MAP = {"SPY": "SSO", "QQQ": "QLD"}
@@ -753,7 +753,7 @@ def render_header():
         FRM Premium<br><span style="color:#f59e0b;">ETF SYSTEM</span>
     </div>
     <div style="font-size: 15px; color: #475569; letter-spacing: 0.5px;">
-        月度 Top-2 動力 + 杠杆條件啟動 &nbsp;·&nbsp; Strategy C — Validated
+        月度 Top-2 動力 + 杠杆條件啟動 &nbsp;·&nbsp; FRM Premium — Validated
     </div>
 </div>
         """,
@@ -881,7 +881,7 @@ body {{ background:transparent; padding:0; margin:0; }}
   <div class="glow"></div>
   <div class="top-row">
     <div>
-      <div class="label">{month_str} 訊號{sig_prov_html} · STRATEGY C</div>
+      <div class="label">{month_str} 訊號{sig_prov_html} · FRM PREMIUM</div>
       <div class="date">{date_line}</div>
     </div>
     <div class="badges">{change_html}{ret_html}{mtd_html}{ytd_html}</div>
@@ -1472,7 +1472,7 @@ def render_dual_heatmap(prices: pd.DataFrame):
 
 
 def render_validation_section():
-    """Section showing all the verified tests + benchmarks proving Strategy C robust."""
+    """Section showing all the verified tests + benchmarks proving FRM Premium robust."""
     st.markdown(
         """
 <div style="background:#0d1424; border:1px solid #1e293b; border-radius:14px; padding:20px 24px; margin-top:18px;">
@@ -1481,7 +1481,7 @@ def render_validation_section():
   </div>
 
   <p style="font-size:13px;color:#94a3b8;line-height:1.7;margin-bottom:14px;">
-    <b style="color:#cbd5e1;">Strategy C</b> 經過 <b>walk-forward optimization</b>、<b>17年回測（含 GFC + COVID + 2022）</b>、
+    <b style="color:#cbd5e1;">FRM Premium</b> 經過 <b>walk-forward optimization</b>、<b>17年回測（含 GFC + COVID + 2022）</b>、
     <b>3 個 AI burst stress scenarios</b> 同 <b>11 個 alternative variants 比較</b> 嘅完整驗證。
   </p>
 
@@ -1525,7 +1525,7 @@ def render_validation_section():
   </table>
   <p style="font-size:11px;color:#64748b;line-height:1.6;font-style:italic;">
     3 個 scenarios 中 2 個正回報；最差場景 18 個月蝕 -12.75%（vs SOXX 變體蝕 -13.52%）。
-    Strategy C 設計刻意排除 SOXX，避過 tech-specific crash 嘅 8pp 額外損失。
+    FRM Premium 設計刻意排除 SOXX，避過 tech-specific crash 嘅 8pp 額外損失。
   </p>
 
   <div style="font-size:12px;color:#cbd5e1;font-weight:700;margin-top:14px;margin-bottom:6px;">
@@ -1542,7 +1542,7 @@ def render_validation_section():
       <tr><td style="padding:6px;">SPY Buy & Hold</td><td style="padding:6px;text-align:right;">11.1%</td><td style="padding:6px;text-align:right;color:#f87171;">-47.2%*</td><td style="padding:6px;text-align:right;">0.73</td></tr>
       <tr style="background:#0a0f1e;"><td style="padding:6px;">FRM Standard (SPY/VEU/BIL)</td><td style="padding:6px;text-align:right;">9.7%</td><td style="padding:6px;text-align:right;">-15.9%</td><td style="padding:6px;text-align:right;">0.86</td></tr>
       <tr><td style="padding:6px;">QRSA-25% (4 modules)</td><td style="padding:6px;text-align:right;">10.5%</td><td style="padding:6px;text-align:right;">-31.0%</td><td style="padding:6px;text-align:right;">0.63</td></tr>
-      <tr style="background:#1e1b1a;"><td style="padding:6px;color:#fbbf24;"><b>FRM Premium (Strategy C) ⭐</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>15.0%</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>-27.9%</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>0.80</b></td></tr>
+      <tr style="background:#1e1b1a;"><td style="padding:6px;color:#fbbf24;"><b>FRM Premium ⭐</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>15.0%</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>-27.9%</b></td><td style="padding:6px;text-align:right;color:#fbbf24;"><b>0.80</b></td></tr>
       <tr><td style="padding:6px;">Combo B (+ SOXX)</td><td style="padding:6px;text-align:right;">18.4%</td><td style="padding:6px;text-align:right;">-30.8%</td><td style="padding:6px;text-align:right;">0.91</td></tr>
     </tbody>
   </table>
@@ -1684,7 +1684,7 @@ def render_disclaimer():
         重要免責聲明 · Important Disclaimer
     </div>
     <p style="font-size:12px;color:#94a3b8;line-height:1.7;margin-bottom:8px;">
-        Strategy C Premium 訊號由 FerryRichMan Limited 基於量化動力模型生成，
+        FRM Premium 訊號由 FerryRichMan Limited 基於量化動力模型生成，
         <strong style="color:#cbd5e1;">僅供參考及教學用途，不構成任何投資建議</strong>。
         歷史表現不代表未來結果，杠杆 ETF 投資涉及顯著風險，包括但不限於本金全部損失。
     </p>
@@ -1693,7 +1693,7 @@ def render_disclaimer():
     </p>
     <hr style="border:none;border-top:1px solid #1e293b;margin:10px 0;">
     <p style="font-size:11px;color:#475569;line-height:1.7;margin-bottom:6px;">
-        Strategy C Premium signals are generated by FerryRichMan Limited based on a quantitative
+        FRM Premium signals are generated by FerryRichMan Limited based on a quantitative
         momentum model, for reference only and <strong style="color:#64748b;">do not constitute
         investment advice</strong>. Past performance is not indicative of future results. Leveraged
         ETF investing involves substantial risk including total loss of principal.
@@ -1720,7 +1720,7 @@ def render_footer():
     </div>
     <div style="font-size:10px;color:#1e293b;">
         &copy; {year} FerryRichMan Limited &middot; All Rights Reserved<br>
-        FRM Premium ETF System (Strategy C) &middot; Powered by Python &amp; Streamlit
+        FRM Premium ETF System &middot; Powered by Python &amp; Streamlit
     </div>
 </div>
         """,
@@ -1963,7 +1963,7 @@ def render_login_page():
        💎 訂閱 Premium &nbsp;→
     </a>
     <div style="font-size: 10px; color: #334155; margin-top: 14px;">
-        Strategy C · 17yr CAGR 15% · 月度 WhatsApp 訊號
+        FRM Premium · 回測 CAGR 16.6% · 月度 WhatsApp 訊號
     </div>
 </div>
             """,

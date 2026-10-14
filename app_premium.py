@@ -437,13 +437,19 @@ def compute_signals(df: pd.DataFrame) -> pd.DataFrame:
     """Compute scores for base tickers, then Top-2 with conditional leverage per-ETF threshold."""
     p = df.copy()
 
-    # Date-based lookback returns (calendar months, robust to dropna)
+    # Date-based lookback returns (exact calendar months, robust to dropna).
+    # pd.DateOffset(months=m) subtracts m calendar months from each month-END
+    # date and lands mid-month (e.g. 2026-11-30 − 3M = 2026-08-30); the ffill
+    # then rolls back to the EARLIER month-end (2026-07-31), silently making the
+    # lookback m+1 months long for month-ends in Feb/Apr/Jun/Nov. Align on
+    # monthly Periods instead, so the lookback is always exactly m month-ends.
+    mth = p.index.to_period("M")
+    pos = pd.Series(p.index, index=mth)
     for m in [3, 6, 9, 12]:
-        target_dates = p.index - pd.DateOffset(months=m)
+        tp = mth - m
+        aligned = pos.reindex(mth.union(tp)).sort_index().ffill().reindex(tp)
         for t in ALL_TICKERS:
-            full_idx = p.index.union(target_dates).sort_values()
-            filled = p[t].reindex(full_idx).ffill()
-            prior = filled.reindex(target_dates).values
+            prior = p[t].reindex(aligned.values).values
             p[f"{t}_{m}m"] = p[t].values / prior - 1
 
     # Score base tickers (only base, not leveraged twins — twins inherit signal)

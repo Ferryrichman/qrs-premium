@@ -1497,7 +1497,7 @@ def render_warnings_section(trades_yr=None):
     ⚠️ 必須了解嘅風險
   </div>
   <ul style="font-size:13px;color:#cbd5e1;line-height:1.8;padding-left:20px;margin:0;">
-    <li><b style="color:#f87171;">單月可以蝕 -20%</b>：歷史 worst month。COVID March 2020 / 2018Q4 / 2008Q4 都試過接近呢個級別</li>
+    <li><b style="color:#f87171;">最差單月 −17.2%</b>：實測最差單月係 2010-05（−17.2%）；其次 2018-10（−16.6%）、2019-05（−16.0%）。單月跌幅可以係雙位數</li>
     <li><b style="color:#f87171;">Max Drawdown 預期 -30% 至 -35%</b>：歷史係 -30.0%，未來最差可能 -40%（包 AI burst worst case）</li>
     <li><b style="color:#f87171;">心理承受要強</b>：當你 hold QLD 一個月蝕 -15%，唔可以 panic sell — 月底 momentum 會自動 rotate</li>
     <li><b style="color:#fbbf24;">2x ETF 杠杆衰變</b>：choppy 市場 SSO/QLD 會 underperform 2x 期望（每年約 -1% to -3%）</li>

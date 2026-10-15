@@ -353,6 +353,21 @@ def render_academic_validation(json_path: str):
             or (oos.get("degradation", {}).get("sharpe", 0) or 0) <= -0.3):
         _CAUTION_FLAGS.append("oos_degradation")
 
+    # Customer-visible caution note — reasons mirror the actual caps in _CAUTION_FLAGS.
+    _n_pos = sum(1 for r in _st_ret if r > 0) if _st_ret else 0
+    _flag_reasons = {
+        "dsr": f"Deflated Sharpe {dsr.get('deflated_sharpe', 0):.3f} 未達 0.95",
+        "wf_corr": f"walk-forward 相關係數 {(wf.get('train_oos_sharpe_correlation') or 0):+.3f} &lt; 0",
+        "stress_few_positive": f"{len(_st_ret)} 個危機期間只有 {_n_pos} 個正回報（少於一半）",
+        "oos_degradation": "樣本外 Sharpe 低過設計期（退化）",
+    }
+    _reasons = [_flag_reasons[f] for f in _CAUTION_FLAGS if f in _flag_reasons]
+    flags_html = (
+        f'<div style="font-size:11px;color:#fbbf24;margin-top:8px;line-height:1.6;">'
+        f'⚠️ 以下測試結果需要留意：{"；".join(_reasons)}。因此下面各項評語最高只標「信心中」。</div>'
+        if _reasons else ""
+    )
+
     # ── HEADER ──
     st.markdown(
         f"""
@@ -373,6 +388,7 @@ def render_academic_validation(json_path: str):
   <div style="font-size:11px;color:#64748b;margin-top:4px;">
     結果生成日期：{v.get('generated_at', 'N/A')[:10]}
   </div>
+  {flags_html}
 </div>
         """,
         unsafe_allow_html=True,

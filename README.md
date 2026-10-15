@@ -1,4 +1,4 @@
-# QRS Premium Signal System (Strategy C)
+# QRS Premium Signal System (FRM Premium)
 
 **FerryRichMan Limited** · Top-2 Weighted Momentum ETF Signal with Conditional Leverage
 
@@ -13,15 +13,19 @@
 - **Conditional leverage**: SPY @ score ≥ 0.05, QQQ @ score ≥ 0.08
 - **Execution**: First trading day of next month at Adj Open
 
-## 📊 Backtest Results (2008-2026, 17.3 years)
+## 📊 Backtest Results (2008-2026, 18.8 years, 225 months)
+
+> 以下數字係 2026-10 回看（lookback）計法更正後重跑嘅版本，同 App 內顯示一致
+> （`validation_premium.json` 生成日 2026-10-14）。
 
 | Metric | Value |
 |---|---|
-| CAGR | **15.0%** |
-| Max Drawdown | -27.9% |
-| Sharpe Ratio | 0.80 |
-| Sortino Ratio | 1.03 |
-| $10k → | $128,684 |
+| CAGR | **16.65%** |
+| Max Drawdown | -30.0% |
+| Sharpe Ratio | 0.86 |
+| Sortino Ratio | 1.14 |
+| $10k → | $179,451 |
+| Trades / year | ~12 |
 
 ---
 
@@ -143,7 +147,7 @@ Visit [http://localhost:8501](http://localhost:8501)
 
 ```
 .
-├── app_premium.py              # Main Streamlit app (Strategy C logic + UI + HMAC token gate)
+├── app_premium.py              # Main Streamlit app (FRM Premium logic + UI + HMAC token gate)
 ├── academic_validation_ui.py   # Renders the academic validation section
 ├── validation_premium.json     # Pre-computed validation results
 ├── requirements.txt            # Python dependencies
@@ -162,7 +166,7 @@ This Premium system uses **2x leveraged ETFs** (SSO, QLD) and is intended for
 sophisticated investors who can tolerate:
 
 - **Single-month losses up to -20%** (historical worst)
-- **Drawdowns of -28% to -35%** (expected; could be -40% in tail event)
+- **Drawdowns of -30% to -35%** (expected; could be -40% in tail event)
 - **2x leveraged ETF decay** in choppy markets
 - **Monthly turnover** ~12 trades/year (tax + commission impact; live figure shown in-app)
 - **Strict execution discipline** required (missing one signal can hurt annual returns)
@@ -181,8 +185,11 @@ sophisticated investors who can tolerate:
 
 ## 🏷️ Version
 
+- **v1.1** (October 2026): `compute_signals()` 嘅 3M／6M／9M／12M 回看改為月份 period 對齊
+  （修正 2／4／6／11 月嘅回看偏差）；回測指標已用修正後計法重跑，歷史上 2／4／6／11 月嘅
+  訊號／持倉行亦已更新。策略公式、門檻、60/40 權重、執行規則**完全不變**。
 - **v1.0** (May 2026): Initial Premium release
-  - Strategy C (Top-2 60/40 weighted, conditional leverage, per-ETF threshold)
+  - FRM Premium（Top-2 60/40 weighted, conditional leverage, per-ETF threshold）
   - Validation suite (walk-forward, GFC, AI burst stress tests)
   - Subscriber access via HMAC-signed unlock tokens (`FRM_SUB_SECRET`, see Step 4) — no static password
 

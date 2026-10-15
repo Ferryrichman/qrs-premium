@@ -1673,6 +1673,8 @@ def render_momentum_table(prices: pd.DataFrame):
     """Detailed table with each month's scores + held #1/#2."""
     rows = []
     for dt in reversed(prices.index):
+        if dt.year < PERF_YEAR_START:
+            continue
         if pd.isna(prices.loc[dt, "held_1"]):
             continue
         r = prices.loc[dt]

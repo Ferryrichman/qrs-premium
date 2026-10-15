@@ -1503,7 +1503,7 @@ def render_warnings_section(trades_yr=None):
     <li><b style="color:#fbbf24;">2x ETF 杠杆衰變</b>：choppy 市場 SSO/QLD 會 underperform 2x 期望（每年約 -1% to -3%）</li>
     <li><b style="color:#fbbf24;">月度 turnover {trades_txt} trades/yr</b>：HK 投資者 commission ~$130/yr / US 散戶有 short-term capital gains</li>
     <li><b style="color:#fbbf24;">執行紀律</b>：必須月底準時 review，月初準時執行；錯過一次 signal 可能影響全年回報</li>
-    <li><b style="color:#94a3b8;">Backtest 限制</b>：17 年數據未包 2000-2007 dotcom bust，未經完整 secular bear market 驗證</li>
+    <li><b style="color:#94a3b8;">Backtest 限制</b>：約 19 年數據（2008–2026）未包 2000-2007 dotcom bust，未經完整 secular bear market 驗證</li>
     <li><b style="color:#94a3b8;">Slippage 假設為零</b>：實際執行 SSO/QLD spread ~0.05-0.20%，大手會有 impact cost</li>
   </ul>
 </div>

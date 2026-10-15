@@ -1,4 +1,4 @@
-# QRS Premium Signal System (FRM Premium)
+# FRM Premium Signal System
 
 **FerryRichMan Limited** · Top-2 Weighted Momentum ETF Signal with Conditional Leverage
 

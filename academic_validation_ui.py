@@ -652,7 +652,7 @@ def render_academic_validation(json_path: str):
         "calmar_above_0_4": ("Calmar ≥ 0.4", "回報相對最大回撤合理"),
         "profit_factor_above_1_5": ("Profit Factor ≥ 1.5", "賺錢月份係蝕錢嘅 1.5 倍以上"),
         "win_rate_above_55pct": ("月勝率 ≥ 55%", "贏多輸少"),
-        "p_value_below_0_05": ("Hypothesis test p<0.05", "月均回報統計上顯著異於 0"),
+        "p_value_below_0_05": ("Hypothesis test p&lt;0.05", "月均回報統計上顯著異於 0"),
         "dsr_above_0_95": ("Deflated Sharpe ≥ 0.95", "嚴格 multiple-test 校正後仍 robust"),
         "oos_sharpe_close_to_in_sample": ("OOS Sharpe 退化 < 0.3", "新數據表現接近設計階段"),
         "wf_correlation_positive": ("Walk-forward 相關性 > 0", "歷史 train Sharpe 對 OOS 有正面預測"),

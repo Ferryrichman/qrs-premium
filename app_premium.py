@@ -630,6 +630,12 @@ def _get_mtd_return(h1: str, h2: str, date_key: str = "", month_key: str = ""):
 
 def calc_stats(prices: pd.DataFrame) -> dict:
     monthly_all = prices["signal_return"].dropna()
+    # AUDIT 2026-10-15b (M1): clip the chart series to the KPI period
+    # (PERF_YEAR_START). The 22-year price window can start before 2008, and the
+    # anchor logic below only pads forward — so the growth curve / underwater
+    # chart used to span 2005-11 onward and end at $272,611 while the KPI tile
+    # said $179,451 for the same $10k start.
+    monthly_all = monthly_all[monthly_all.index.year >= PERF_YEAR_START]
     cum_all = (1 + monthly_all).cumprod() * 10000
 
     # SPY benchmark (open-to-open, identical methodology)
@@ -1394,6 +1400,13 @@ def render_dual_heatmap(prices: pd.DataFrame):
     etf_map_1, etf_map_2, ret_map = {}, {}, {}
     for dt in prices.index:
         y, m = dt.year, dt.month
+        if y < PERF_YEAR_START:
+            # AUDIT 2026-10-15b (M2): the heatmap must show the same backtest
+            # window as the KPI / annual chart ("歷史績效 (2008-2026)"). The
+            # price panel can start earlier (22-year window), which used to make
+            # the table show 2005-11..2007-12 — months excluded from every
+            # metric, and a "2005" row built from 2 months only.
+            continue
         e1, e2 = h1.loc[dt], h2.loc[dt]
         r = ret_s.loc[dt]
         if pd.notna(e1): etf_map_1[(y, m)] = str(e1)
@@ -1879,7 +1892,7 @@ def render_login_page():
        💎 訂閱 Premium &nbsp;→
     </a>
     <div style="font-size: 10px; color: #334155; margin-top: 14px;">
-        FRM Premium · 回測 CAGR 16.6% · 月度 WhatsApp 訊號
+        FRM Premium · 歷史回測 18.8 年（2008–2026）：平均每年 +16.6% · 每月 WhatsApp 訊號
     </div>
 </div>
             """,

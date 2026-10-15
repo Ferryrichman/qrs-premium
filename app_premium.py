@@ -5,7 +5,7 @@ FerryRichMan Limited
 Streamlit App — Top-2 Weighted Momentum ETF Signal with Conditional Leverage
 ──────────────────────────────────────────────────────────────────────────────
 
-CORE LOGIC (chosen over Combo B / D — a risk/return trade-off,
+CORE LOGIC (chosen over the tested alternatives — a risk/return trade-off,
 not a Pareto-dominant result):
   - Universe: SPY, QQQ, VEU, GLD, TLT, BIL  (6 unleveraged base ETFs)
   - Leverage twins: SPY -> SSO (2x),  QQQ -> QLD (2x)
@@ -16,14 +16,15 @@ not a Pareto-dominant result):
   - Execute on first trading day of next month at Adj Open
 
 PROVEN-OPTIMAL DESIGN CHOICES (do not modify):
-  - 60/40 Top-2 weighting (vs 50/50): ~+0.4pp CAGR but ~2.6pp deeper MDD
-    (-27.9% vs -25.3%; 2026-10 internal re-run) — a trade-off, not free
+  - 60/40 Top-2 weighting (vs 50/50): higher CAGR but deeper MDD — a deliberate
+    trade-off, not free (absolute figures not quoted: they predate the 2026-10
+    3M lookback fix and have not been re-run since)
   - QQQ threshold 0.08 (vs 0.05): -3pp MDD, +0.02 Sharpe
   - No 200MA filter:        ❌ tested, hurts in V-recoveries
   - No AM Guard:            ❌ tested, hurts post-crash recovery
   - No DDCB circuit breaker: ❌ tested, whipsaw destroys returns
   - No 3x leverage:          ❌ tail risk too high, dotcom 2000-02 -85% (simulated)
-  - No SOXX:                 ❌ AI-burst stress shows 8pp deeper drawdown vs C
+  - No SOXX:                 ❌ AI-burst stress shows 8pp deeper drawdown vs FRM Premium
 """
 
 import streamlit as st
